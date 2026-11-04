@@ -99,7 +99,7 @@ jobs:
           Compress-Archive -Path "gpl-sources\*" -DestinationPath "openfruit-third-party-sources.zip" -Force
 
           # Compute SHA-256 checksums
-          $Sums = foreach ($File in @(Get-ChildItem "release-dist" -File) + @(Get-Item "openfruit-windows-x64.zip", "openfruit-third-party-sources.zip")) {
+          $Sums = foreach ($File in Get-Item "release-dist\openib.exe", "openfruit-windows-x64.zip", "openfruit-third-party-sources.zip") {
             "$((Get-FileHash -Algorithm SHA256 $File.FullName).Hash.ToLower())  $($File.Name)"
           }
           $Sums | Out-File -FilePath "SHA256SUMS.txt" -Encoding utf8
@@ -115,8 +115,10 @@ jobs:
           prerelease: ${{ steps.release.outputs.prerelease == 'true' }}
           # A prerelease never becomes "latest", which `openfruit` downloads from.
           make_latest: ${{ steps.release.outputs.make_latest }}
+          # openfruit.exe is shipped only inside the zip: it needs unicorn.dll.
+          # openib.exe stays a standalone asset because `openfruit` downloads
+          # it from the latest release when it is missing.
           files: |
-            release-dist/openfruit.exe
             release-dist/openib.exe
             openfruit-windows-x64.zip
             openfruit-third-party-sources.zip
@@ -126,10 +128,10 @@ jobs:
 
             Windows-native iOS toolchain and build suite.
 
-            #### Included Binaries
-            - `openfruit.exe`: Main OpenFruit command line interface and build orchestrator.
-            - `openib.exe`: OpenFruit native Interface Builder / Storyboard / XIB compiler.
-            - `openfruit-windows-x64.zip`: Standalone zip archive containing all binaries, `unicorn.dll`, the license and the third-party license texts.
-            - `openfruit-third-party-sources.zip`: Corresponding source of the GPL/LGPL components built into the binaries (Unicorn, apfs-fuse, libplist).
+            #### Download
+            - `openfruit-windows-x64.zip`: everything needed to run OpenFruit (`openfruit.exe`, `openib.exe`, `unicorn.dll`, the macro host, `genstrings.exe`), the license and the third-party license texts.
+            - `openfruit-third-party-sources.zip`: corresponding source of the GPL/LGPL components built into the binaries (Unicorn, apfs-fuse, libplist).
+            - `openib.exe`: the Interface Builder / Storyboard / XIB compiler alone; `openfruit` downloads it from here when it is missing.
+            - `SHA256SUMS.txt`: SHA-256 checksums of the files above.
 
             OpenFruit is licensed under GPL-2.0-or-later; distributed binaries include Unicorn (GPL-2.0). See `LICENSE` and `THIRD_PARTY_NOTICES.md`. A non-binding request for charitable donations is described in `CHARITY.md`.

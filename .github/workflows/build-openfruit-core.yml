@@ -1,14 +1,8 @@
 name: Build OpenFruit Core (Windows)
 
 on:
-  push:
-    branches: [ main, master, openfruit ]
-    paths:
-      - 'openfruit/windows/**'
-      - 'openib/**'
-      - '.github/workflows/build-openfruit-core.yml'
-  pull_request:
-    branches: [ main, master, openfruit ]
+  # Builds run automatically only for release tags (release-openfruit.yml);
+  # this check runs only when started by hand from the Actions page.
   workflow_dispatch:
 
 jobs:
