@@ -1,3 +1,4 @@
+#include "utf8_path.hpp"
 #include "app_builder.hpp"
 #include "asset_catalog_compiler.hpp"
 #include "core_data_compiler.hpp"
@@ -86,7 +87,7 @@ bool LinkOutputUpToDate(const fs::path& output, const fs::path& dependency_info,
         const auto opcode = static_cast<unsigned char>(records[at]);
         const auto end = records.find('\0', at + 1);
         if (end == std::string::npos) return false;
-        const auto path = fs::u8path(records.substr(at + 1, end - at - 1));
+        const auto path = Utf8Path(records.substr(at + 1, end - at - 1));
         at = end + 1;
         // lld also records each archive member by its bare member name; the
         // archive that contains it is recorded by its full path.
@@ -3199,7 +3200,7 @@ AppBuildResult AppBuilder::Build(
                     auto [known, inserted] = input_times.try_emplace(path);
                     if (inserted) {
                         std::error_code time_ec;
-                        const auto time = fs::last_write_time(fs::u8path(path), time_ec);
+                        const auto time = fs::last_write_time(Utf8Path(path), time_ec);
                         if (!time_ec) known->second = time;
                     }
                     return known->second && *known->second <= built;

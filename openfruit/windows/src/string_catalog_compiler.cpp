@@ -1,3 +1,4 @@
+#include "utf8_path.hpp"
 #include "string_catalog_compiler.hpp"
 #include "json_value.hpp"
 
@@ -208,7 +209,7 @@ bool StringCatalogCompiler::Compile(
             error = "invalid language code in string catalog: " + language;
             return false;
         }
-        const auto directory = bundle_dir / fs::u8path(language + ".lproj");
+        const auto directory = bundle_dir / Utf8Path(language + ".lproj");
         std::error_code ec;
         fs::create_directories(directory, ec);
         if (ec) { error = "cannot create " + directory.string() + ": " + ec.message(); return false; }

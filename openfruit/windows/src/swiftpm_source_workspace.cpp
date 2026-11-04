@@ -1,3 +1,4 @@
+#include "utf8_path.hpp"
 #include "swiftpm_source_workspace.hpp"
 #include "content_hash.hpp"
 #include "atomic_file.hpp"
@@ -219,8 +220,8 @@ std::string NativeHead(const fs::path& repository) {
     if (head.rfind("ref: ", 0) != 0) return {};
     const auto ref = head.substr(5);
     if (ref.rfind("refs/", 0) != 0 || ref.find("..") != std::string::npos) return {};
-    if (fs::is_regular_file(git / fs::u8path(ref), ec)) {
-        const auto loose = TrimLine(Read(git / fs::u8path(ref)));
+    if (fs::is_regular_file(git / Utf8Path(ref), ec)) {
+        const auto loose = TrimLine(Read(git / Utf8Path(ref)));
         return ObjectName(loose) ? loose : std::string{};
     }
     std::istringstream packed(Read(git / "packed-refs"));
@@ -256,7 +257,7 @@ void IsolateGitMetadata(const fs::path& backing, const fs::path& view,
             if (!line.empty() && line.back() == '\r') line.pop_back();
             if (line.empty() || line.front() == '"')
                 throw std::runtime_error("Unsupported Git alternate object path encoding.");
-            auto target = fs::u8path(line);
+            auto target = Utf8Path(line);
             if (!target.is_absolute()) target = backing / ".git/objects" / target;
             target = fs::canonical(target);
             // Kept from an earlier synchronization: already relocated.
@@ -308,7 +309,7 @@ void IsolateGitMetadata(const fs::path& backing, const fs::path& view,
     };
     const auto worktree = query("core.worktree");
     if (!worktree.empty()) {
-        auto target = fs::u8path(worktree);
+        auto target = Utf8Path(worktree);
         if (!target.is_absolute()) target = backing / ".git" / target;
         const auto resolved = fs::canonical(target);
         // A worktree kept from an earlier synchronization already names the view.
@@ -318,7 +319,7 @@ void IsolateGitMetadata(const fs::path& backing, const fs::path& view,
             assign(L"core.worktree", view);
         }
     }
-    const auto origin = fs::u8path(query("remote.origin.url"));
+    const auto origin = Utf8Path(query("remote.origin.url"));
     if (origin.is_absolute() && Within(origin.lexically_normal(), original))
         assign(L"remote.origin.url", output / origin.lexically_normal().lexically_relative(original));
 }
@@ -492,7 +493,7 @@ SwiftPMSourceWorkspace PrepareSwiftPMSourceWorkspace(const fs::path& swift, cons
                 while (!top_path.empty() && (top_path.back() == '\r' || top_path.back() == '\n'))
                     top_path.pop_back();
                 if (!top.success || top.output_truncated || top_path.empty() ||
-                    fs::canonical(fs::u8path(top_path)) != backing || Head(backing, control).empty())
+                    fs::canonical(Utf8Path(top_path)) != backing || Head(backing, control).empty())
                     throw std::runtime_error("SwiftPM resolver-owned local package has invalid Git provenance: " + identity);
                 GitSourceView view;
                 view.root = backing;

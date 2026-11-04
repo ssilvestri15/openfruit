@@ -77,7 +77,9 @@ FetchContent_Declare(openfruit_lzfse
     URL_HASH SHA256=ca98aa6644d44500e3315858daa747ce15bd06d49e3edb12a5458e5525e8ebdb
     TLS_VERIFY ON EXCLUDE_FROM_ALL)
 function(openfruit_load_lzfse)
-    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+    # The pinned upstream asks for CMake < 3.10; 3.10 policies keep it
+    # unchanged and avoid the compatibility deprecation warning.
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
     FetchContent_MakeAvailable(openfruit_lzfse)
 endfunction()
 openfruit_load_lzfse()
@@ -109,6 +111,24 @@ target_include_directories(openfruit_apfs_reference_codec PRIVATE "${openfruit_l
 target_link_libraries(openfruit_apfs_reference_codec PRIVATE openfruit_bzip2_codec ZLIB::ZLIBSTATIC lzfse)
 install(FILES "${openfruit_apfs_reference_SOURCE_DIR}/LICENSE" DESTINATION share/licenses/openfruit RENAME apfs-fuse-LICENSE)
 install(FILES "${openfruit_bzip2_SOURCE_DIR}/LICENSE" DESTINATION share/licenses/openfruit RENAME bzip2-LICENSE)
+# Pinned third-party sources are built unchanged: their warnings are not
+# OpenFruit's to fix, so they are silenced for those targets only, and their
+# headers are system headers for OpenFruit code.
+foreach(third_party unicorn-common aarch64-softmmu unicorn lzfse liblzma zlibstatic
+        openfruit_bzip2_codec openfruit_apfs_reference_codec)
+    if(TARGET ${third_party})
+        get_target_property(third_party_real ${third_party} ALIASED_TARGET)
+        if(NOT third_party_real)
+            set(third_party_real ${third_party})
+        endif()
+        if(MSVC)
+            target_compile_options(${third_party_real} PRIVATE /w)
+        else()
+            target_compile_options(${third_party_real} PRIVATE -w)
+        endif()
+        set_target_properties(${third_party_real} PROPERTIES SYSTEM TRUE)
+    endif()
+endforeach()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)

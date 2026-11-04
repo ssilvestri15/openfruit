@@ -1,3 +1,4 @@
+#include "utf8_path.hpp"
 #include "environment_manager.hpp"
 #include "artifact_store.hpp"
 #include "content_hash.hpp"
@@ -45,7 +46,7 @@ int main(int argc, char** argv) {
     try {
         if (argc == 4 && std::string(argv[1]) == "--crash-after-import-copy") {
             const bool imported = NativeArtifactStore::ImportTreeTransactional(
-                fs::u8path(argv[2]), fs::u8path(argv[3]), [](const fs::path&) -> bool {
+                Utf8Path(argv[2]), Utf8Path(argv[3]), [](const fs::path&) -> bool {
                     // Abrupt process death leaves the real prepublication owner
                     // receipt and copied original files; no stack cleanup runs.
                     ExitProcess(23);
@@ -55,7 +56,7 @@ int main(int argc, char** argv) {
         }
         Require(argc == 1 || argc == 2, "usage: swift_host_environment_tests [input-toolchain-bin]");
         const auto config = Config::Load(L"", false);
-        fs::path bin = argc == 2 ? fs::u8path(argv[1]) : fs::path(config.toolchain_path);
+        fs::path bin = argc == 2 ? Utf8Path(argv[1]) : fs::path(config.toolchain_path);
         if (argc == 1 && (!fs::is_regular_file(bin / "swift.exe") || !fs::is_regular_file(bin / "swiftc.exe")))
             bin = ToolPaths::SwiftBin({});
         if (!fs::is_regular_file(bin / "swift.exe") || !fs::is_regular_file(bin / "swiftc.exe")) {

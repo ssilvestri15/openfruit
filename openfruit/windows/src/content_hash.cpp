@@ -1,4 +1,5 @@
 ﻿#include "content_hash.hpp"
+#include "utf8_path.hpp"
 #include <windows.h>
 #include <bcrypt.h>
 #include <array>
@@ -100,7 +101,7 @@ std::optional<std::string> CachedHandleDigest(HANDLE file, std::wstring key, con
                 fields.get();
                 std::getline(fields, name);
                 if (digest.size() == 64 && !name.empty())
-                    digests.entries[std::filesystem::u8path(name).wstring()] = {known, digest};
+                    digests.entries[Utf8Path(name).wstring()] = {known, digest};
             }
         }
         if (const auto found = digests.entries.find(key); found != digests.entries.end() && found->second.first == *stat)

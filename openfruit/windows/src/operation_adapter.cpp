@@ -1,3 +1,4 @@
+#include "utf8_path.hpp"
 #include "operation_adapter.hpp"
 #include "device_usbmux.hpp"
 #include "device_deployer.hpp"
@@ -254,7 +255,7 @@ public:
                 return err;
             }
             IpaVerificationRequest vreq;
-            vreq.archive = fs::u8path(archive_path_str);
+            vreq.archive = Utf8Path(archive_path_str);
             auto vres = VerifyIpa(vreq);
             return vres.ToJson();
         }
@@ -268,7 +269,7 @@ public:
                 err.Set("error", JsonValue::String("Missing project_path in build request"));
                 return err;
             }
-            build_req.project.path = fs::absolute(fs::u8path(proj_str));
+            build_req.project.path = fs::absolute(Utf8Path(proj_str));
             std::string mode_str = req.GetString("mode");
             build_req.mode = (mode_str == "package") ? BuildProductMode::UnsignedPackage : BuildProductMode::BuildAndSign;
             build_req.configuration = Win32Process::ToWide(req.GetString("configuration", "debug"));

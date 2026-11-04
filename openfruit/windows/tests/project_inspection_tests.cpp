@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <fstream>
 #include <algorithm>
+#include <string>
+#include <windows.h>
 
 namespace fs = std::filesystem;
 
@@ -40,8 +42,12 @@ int main(int argc, char** argv) {
     }
 
     // 3. Optional: inspect a local Swiftfin checkout named by OPENFRUIT_TEST_SWIFTFIN.
-    const wchar_t* swiftfin_root = _wgetenv(L"OPENFRUIT_TEST_SWIFTFIN");
-    const fs::path swiftfin_path = swiftfin_root ? fs::path(swiftfin_root) : fs::path{};
+    fs::path swiftfin_path;
+    if (const DWORD length = GetEnvironmentVariableW(L"OPENFRUIT_TEST_SWIFTFIN", nullptr, 0); length > 1) {
+        std::wstring value(length, L'\0');
+        value.resize(GetEnvironmentVariableW(L"OPENFRUIT_TEST_SWIFTFIN", value.data(), length));
+        swiftfin_path = value;
+    }
     if (!swiftfin_path.empty() && fs::exists(swiftfin_path)) {
         const auto insp = OpenFruit::ProjectInspection::Inspect(swiftfin_path.wstring(), "Debug");
         if (!insp.success) {

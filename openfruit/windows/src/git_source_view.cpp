@@ -1,3 +1,4 @@
+#include "utf8_path.hpp"
 #include "git_source_view.hpp"
 #include "operation_events.hpp"
 #include "atomic_file.hpp"
@@ -350,7 +351,7 @@ struct Builder {
                 if (tab == std::string::npos || tab == 0 || entry[tab - 1] != '0')
                     Fail("malformed or unmerged Git index", root);
                 if (entry.rfind("120000 ", 0) == 0 &&
-                    !links.insert((root / fs::u8path(entry.substr(tab + 1))).lexically_normal()).second)
+                    !links.insert((root / Utf8Path(entry.substr(tab + 1))).lexically_normal()).second)
                     Fail("case-ambiguous Git symlink entries", root);
                 begin = end + 1;
             }
@@ -424,7 +425,7 @@ struct Builder {
                 const std::string text((std::istreambuf_iterator<char>(input)), {});
                 if (input.bad() || text.empty() || text.find('\0') != std::string::npos)
                     Fail("invalid Git placeholder", path);
-                target = fs::u8path(text); // Never trim: spaces belong to the target name.
+                target = Utf8Path(text); // Never trim: spaces belong to the target name.
             } else {
                 if (!fs::exists(status)) {
                     if (optional && (!pending.from_link_target || admit_dangling)) return std::nullopt;
@@ -599,7 +600,7 @@ struct Builder {
                 std::ifstream input(original, std::ios::binary);
                 const std::string raw((std::istreambuf_iterator<char>(input)), {});
                 if (!input && !input.eof()) Fail("cannot read Git placeholder", original);
-                text = fs::u8path(raw);
+                text = Utf8Path(raw);
             } else Fail("missing source or link target", original);
             text.make_preferred();
             const auto lexical = (relative.parent_path() / text).lexically_normal();
@@ -839,7 +840,7 @@ OwnedEntries LoadReceipt(const fs::path& receipt, const fs::path& source,
         value->GetString("destination") != PathText(destination))
         Fail("source view receipt ownership mismatch", receipt);
     if (state) *state = value->GetString("state");
-    const auto registered_source = fs::u8path(value->GetString("source"));
+    const auto registered_source = Utf8Path(value->GetString("source"));
     if (registered_source.empty() || !registered_source.is_absolute() ||
         registered_source.lexically_normal() != registered_source)
         Fail("invalid registered source view root", receipt);
@@ -852,8 +853,8 @@ OwnedEntries LoadReceipt(const fs::path& receipt, const fs::path& source,
             const auto* content = item.Get(field);
             if (!content || !content->IsString()) Fail("invalid source view entry field", receipt);
         }
-        ViewEntry entry{fs::u8path(item.GetString("path")), fs::u8path(item.GetString("resolved")),
-            fs::u8path(item.GetString("target")), item.GetString("type"), item.GetString("sha256"),
+        ViewEntry entry{Utf8Path(item.GetString("path")), Utf8Path(item.GetString("resolved")),
+            Utf8Path(item.GetString("target")), item.GetString("type"), item.GetString("sha256"),
             item.GetString("input_kind"), item.GetString("input_target")};
         ValidateRelative(entry.relative);
         if ((entry.type != "file" && entry.type != "directory" && entry.type != "alias" &&

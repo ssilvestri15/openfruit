@@ -29,8 +29,8 @@ struct AfcHeader {
 #pragma pack(pop)
 
 constexpr uint64_t AFC_OP_STATUS = 0x00000001;
-constexpr uint64_t AFC_OP_DATA = 0x00000002;
-constexpr uint64_t AFC_OP_READ = 0x0000000F;  // AFC_OP_FILE_READ
+[[maybe_unused]] constexpr uint64_t AFC_OP_DATA = 0x00000002;
+[[maybe_unused]] constexpr uint64_t AFC_OP_READ = 0x0000000F;  // AFC_OP_FILE_READ
 constexpr uint64_t AFC_OP_WRITE = 0x00000010; // AFC_OP_FILE_WRITE
 constexpr uint64_t AFC_OP_MAKE_DIR = 0x00000009;
 constexpr uint64_t AFC_OP_FILE_OPEN = 0x0000000D;

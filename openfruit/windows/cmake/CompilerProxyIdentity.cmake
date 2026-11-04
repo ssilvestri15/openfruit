@@ -218,6 +218,9 @@ function(openfruit_enable_compiler_proxy_identity target)
     # FetchContent options also affect the compiled dependency closure.
     get_cmake_property(cache_variables CACHE_VARIABLES)
     list(SORT cache_variables)
+    # CMAKE_WARN/ERROR_DEPRECATED only control CMake's own diagnostics, and
+    # reading them is itself deprecated (policy CMP0218).
+    list(REMOVE_ITEM cache_variables CMAKE_WARN_DEPRECATED CMAKE_ERROR_DEPRECATED)
     foreach(variable IN LISTS cache_variables)
         string(APPEND options "cache.${variable}=${${variable}}\n")
     endforeach()

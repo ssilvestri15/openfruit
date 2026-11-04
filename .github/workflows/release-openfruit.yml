@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -43,10 +43,17 @@ jobs:
           "make_latest=$Latest" >> $env:GITHUB_OUTPUT
           Write-Host "Release $Tag (prerelease: $Prerelease)"
 
-      - name: Setup LLVM & Clang
-        uses: KyleMayes/install-llvm-action@v2
-        with:
-          version: "20.1.8"
+      - name: Setup LLVM & Clang 20.1.8
+        shell: pwsh
+        run: |
+          # The official LLVM installer, unpacked without running it (as the
+          # former install-llvm action did), first on PATH for later steps.
+          $Installer = Join-Path $env:RUNNER_TEMP "LLVM-20.1.8-win64.exe"
+          Invoke-WebRequest -Uri "https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.8/LLVM-20.1.8-win64.exe" -OutFile $Installer
+          $Target = "C:\Program Files\LLVM"
+          & 7z x $Installer "-o$Target" -y | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw "Unable to unpack LLVM 20.1.8" }
+          Join-Path $Target "bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Verify Clang Compiler
         run: |
@@ -105,33 +112,43 @@ jobs:
           $Sums | Out-File -FilePath "SHA256SUMS.txt" -Encoding utf8
 
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.release.outputs.tag }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_PRERELEASE: ${{ steps.release.outputs.prerelease }}
+          RELEASE_LATEST: ${{ steps.release.outputs.make_latest }}
           # A manual run creates the tag on the commit it built.
-          target_commitish: ${{ github.sha }}
-          name: "OpenFruit ${{ steps.release.outputs.tag }}"
-          draft: false
-          prerelease: ${{ steps.release.outputs.prerelease == 'true' }}
-          # A prerelease never becomes "latest", which `openfruit` downloads from.
-          make_latest: ${{ steps.release.outputs.make_latest }}
+          RELEASE_TARGET: ${{ github.sha }}
+        run: |
+          $Tag = $env:RELEASE_TAG
+          @(
+            "### OpenFruit $Tag",
+            "",
+            "Windows-native iOS toolchain and build suite.",
+            "",
+            "#### Download",
+            '- `openfruit-windows-x64.zip`: everything needed to run OpenFruit (`openfruit.exe`, `openib.exe`, `unicorn.dll`, the macro host, `genstrings.exe`), the license and the third-party license texts.',
+            '- `openfruit-third-party-sources.zip`: corresponding source of the GPL/LGPL components built into the binaries (Unicorn, apfs-fuse, libplist).',
+            '- `openib.exe`: the Interface Builder / Storyboard / XIB compiler alone; `openfruit` downloads it from here when it is missing.',
+            '- `SHA256SUMS.txt`: SHA-256 checksums of the files above.',
+            "",
+            'OpenFruit is licensed under GPL-2.0-or-later; distributed binaries include Unicorn (GPL-2.0). See `LICENSE` and `THIRD_PARTY_NOTICES.md`. A non-binding request for charitable donations is described in `CHARITY.md`.'
+          ) | Out-File -FilePath release-notes.md -Encoding utf8
           # openfruit.exe is shipped only inside the zip: it needs unicorn.dll.
           # openib.exe stays a standalone asset because `openfruit` downloads
           # it from the latest release when it is missing.
-          files: |
-            release-dist/openib.exe
-            openfruit-windows-x64.zip
-            openfruit-third-party-sources.zip
-            SHA256SUMS.txt
-          body: |
-            ### OpenFruit ${{ steps.release.outputs.tag }}
-
-            Windows-native iOS toolchain and build suite.
-
-            #### Download
-            - `openfruit-windows-x64.zip`: everything needed to run OpenFruit (`openfruit.exe`, `openib.exe`, `unicorn.dll`, the macro host, `genstrings.exe`), the license and the third-party license texts.
-            - `openfruit-third-party-sources.zip`: corresponding source of the GPL/LGPL components built into the binaries (Unicorn, apfs-fuse, libplist).
-            - `openib.exe`: the Interface Builder / Storyboard / XIB compiler alone; `openfruit` downloads it from here when it is missing.
-            - `SHA256SUMS.txt`: SHA-256 checksums of the files above.
-
-            OpenFruit is licensed under GPL-2.0-or-later; distributed binaries include Unicorn (GPL-2.0). See `LICENSE` and `THIRD_PARTY_NOTICES.md`. A non-binding request for charitable donations is described in `CHARITY.md`.
+          $Assets = @("release-dist/openib.exe", "openfruit-windows-x64.zip", "openfruit-third-party-sources.zip", "SHA256SUMS.txt")
+          # A prerelease never becomes "latest", which `openfruit` downloads from.
+          $Flags = @("--title", "OpenFruit $Tag", "--notes-file", "release-notes.md", "--latest=$env:RELEASE_LATEST")
+          if ($env:RELEASE_PRERELEASE -eq 'true') { $Flags += "--prerelease" }
+          gh release view $Tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            # Re-run of an existing release: refresh its text and assets.
+            gh release edit $Tag @Flags
+            if ($LASTEXITCODE -ne 0) { throw "Unable to update release $Tag" }
+            gh release upload $Tag @Assets --clobber
+          } else {
+            gh release create $Tag @Assets --target $env:RELEASE_TARGET @Flags
+          }
+          if ($LASTEXITCODE -ne 0) { throw "Unable to publish release $Tag" }

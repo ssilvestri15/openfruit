@@ -26,7 +26,7 @@ namespace {
 thread_local const char* diagnostic_stage="setup";
 void DiagnosticStage(const char* name){
     diagnostic_stage=name;
-    if(std::getenv("OPENFRUIT_TEST_TRACE")){std::fprintf(stderr,"[darwin-image-stage] %s\n",name);std::fflush(stderr);}
+    if(GetEnvironmentVariableA("OPENFRUIT_TEST_TRACE",nullptr,0)>0){std::fprintf(stderr,"[darwin-image-stage] %s\n",name);std::fflush(stderr);}
 }
 LONG CALLBACK DiagnosticException(EXCEPTION_POINTERS* exception){
     if(exception&&exception->ExceptionRecord&&exception->ExceptionRecord->ExceptionCode==EXCEPTION_ACCESS_VIOLATION){
@@ -120,7 +120,7 @@ int Inventory() {
 }
 }
 int main(int argc, char** argv) {
-    if(std::getenv("OPENFRUIT_TEST_TRACE"))SetUnhandledExceptionFilter(DiagnosticException);
+    if(GetEnvironmentVariableA("OPENFRUIT_TEST_TRACE",nullptr,0)>0)SetUnhandledExceptionFilter(DiagnosticException);
     fs::path root;
     try {
         if (argc == 2 && std::string(argv[1]) == "--inventory") return Inventory();

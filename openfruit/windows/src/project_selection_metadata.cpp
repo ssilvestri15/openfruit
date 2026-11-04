@@ -1,3 +1,4 @@
+#include "utf8_path.hpp"
 #include "project_selection_metadata.hpp"
 #include "build_workspace.hpp"
 #include "content_hash.hpp"
@@ -126,7 +127,7 @@ fs::path SchemeOwner(const fs::path& file) {
 }
 fs::path FindScheme(const ProjectInspectionRequest& request, const fs::path& input,
     Scope& scope, std::vector<ProjectMetadataAdmission>& admissions) {
-    const auto selector = fs::u8path(*request.scheme);
+    const auto selector = Utf8Path(*request.scheme);
     if (selector.empty()) throw std::runtime_error("OPENFRUIT selection: scheme selector is empty.");
     const auto base = input.extension() == L".xcodeproj" || input.extension() == L".xcworkspace" ||
         input.filename() == L"project.pbxproj" ? input.parent_path() : input;

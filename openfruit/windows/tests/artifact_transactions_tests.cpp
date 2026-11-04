@@ -1,3 +1,4 @@
+#include "utf8_path.hpp"
 #include "artifact_store.hpp"
 #include "operation_events.hpp"
 #include "win32_process.hpp"
@@ -888,7 +889,7 @@ int main(int argc, char** argv) {
     try {
         LeaseTests(root, executable); QuotaPolicyTests(root); BoundedPruneTests(root); ImportedFileTests(root); ScratchRecoveryTests(root, executable);
         SharedReadLeaseTests(root, executable);
-        if (argc == 2) CliQuotaTests(root, fs::absolute(fs::u8path(argv[1])));
+        if (argc == 2) CliQuotaTests(root, fs::absolute(Utf8Path(argv[1])));
     }
     catch (const std::exception& error) { std::cerr << error.what() << '\n'; return 9; }
     return 0;

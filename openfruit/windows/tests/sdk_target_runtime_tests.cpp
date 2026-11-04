@@ -1,3 +1,4 @@
+#include "utf8_path.hpp"
 #include "sdk_target_runtime.hpp"
 #include "operation_events.hpp"
 #include "content_hash.hpp"
@@ -188,7 +189,7 @@ int main(int argc, char** argv) {
     // Diagnostic invocation of the actual native service on admitted inputs;
     // no stand-in extraction, tool selection or fabricated success path.
     if (argc == 6 && std::string(argv[1]) == "--probe-managed") {
-        auto result = EnsureIosTargetRuntime(fs::u8path(argv[2]), fs::u8path(argv[3]), argv[4], fs::u8path(argv[5]));
+        auto result = EnsureIosTargetRuntime(Utf8Path(argv[2]), Utf8Path(argv[3]), argv[4], Utf8Path(argv[5]));
         auto report = result.evidence;
         report.Set("available", JsonValue::Boolean(result.available));
         report.Set("error", JsonValue::String(result.error));

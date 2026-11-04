@@ -12,12 +12,19 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Setup LLVM & Clang
-        uses: KyleMayes/install-llvm-action@v2
-        with:
-          version: "20.1.8"
+      - name: Setup LLVM & Clang 20.1.8
+        shell: pwsh
+        run: |
+          # The official LLVM installer, unpacked without running it (as the
+          # former install-llvm action did), first on PATH for later steps.
+          $Installer = Join-Path $env:RUNNER_TEMP "LLVM-20.1.8-win64.exe"
+          Invoke-WebRequest -Uri "https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.8/LLVM-20.1.8-win64.exe" -OutFile $Installer
+          $Target = "C:\Program Files\LLVM"
+          & 7z x $Installer "-o$Target" -y | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw "Unable to unpack LLVM 20.1.8" }
+          Join-Path $Target "bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Verify Clang Compiler
         run: |
@@ -46,7 +53,7 @@ jobs:
           Compress-Archive -Path "dist\*" -DestinationPath "openfruit-windows-x64.zip"
 
       - name: Upload OpenFruit Core Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: openfruit-windows-x64
           path: openfruit-windows-x64.zip

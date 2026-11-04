@@ -1,3 +1,4 @@
+#include "utf8_path.hpp"
 #include "compiler_proxy.hpp"
 #include "macro_engine.hpp"
 #include "darwin_macro_provider.hpp"
@@ -1213,7 +1214,7 @@ bool PrepareStringCatalogResources(std::vector<std::wstring>& arguments) {
             for (std::string line; std::getline(list, line);) {
                 while (!line.empty() && (line.back() == '\r' || line.back() == ' ')) line.pop_back();
                 if (line.size() >= 2 && line.front() == '"' && line.back() == '"') line = line.substr(1, line.size() - 2);
-                if (!line.empty()) add_source(fs::u8path(line));
+                if (!line.empty()) add_source(Utf8Path(line));
             }
         } else if (!argument.empty() && argument[0] != L'-') {
             add_source(fs::path(argument));
@@ -1268,7 +1269,7 @@ bool PrepareStringCatalogResources(std::vector<std::wstring>& arguments) {
     }
     if (bundle_name.empty()) bundle_name = (package_name.empty() ? module_name : package_name) + "_" + module_name;
 
-    const fs::path bundle_dir = output_file_map_path.parent_path().parent_path() / fs::u8path(bundle_name + ".bundle");
+    const fs::path bundle_dir = output_file_map_path.parent_path().parent_path() / Utf8Path(bundle_name + ".bundle");
     std::string development_region, error;
     if (!StringCatalogCompiler::Compile(catalogs, bundle_dir, development_region, error)) {
         std::cerr << "OPENFRUIT SwiftPM: string catalog compilation failed for " << module_name << ": " << error << '\n';

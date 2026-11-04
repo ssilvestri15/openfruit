@@ -1,3 +1,4 @@
+#include "utf8_path.hpp"
 #include "content_hash.hpp"
 #include "event_journal.hpp"
 #include "json_value.hpp"
@@ -402,7 +403,7 @@ int main(int argc, char** argv) {
             std::cerr << "SKIP: no installed OPENFRUIT CLI yet (first installation)\n";
             return 77;
         }
-        const auto proxy = fs::absolute(fs::u8path(argv[1]));
+        const auto proxy = fs::absolute(Utf8Path(argv[1]));
         Require(fs::is_regular_file(proxy), "Requested native compiler proxy does not exist");
         const auto environment = PackageEngine::HostEnvironment(swift_bin);
         const auto derived_sdk = EnvironmentEntry(environment, L"OPENFRUIT_SWIFT_MANIFEST_SDK");
@@ -465,7 +466,7 @@ int main(int argc, char** argv) {
             }
         }
         if (argc == 3) {
-            const auto baseline = fs::absolute(fs::u8path(argv[2]));
+            const auto baseline = fs::absolute(Utf8Path(argv[2]));
             Require(fs::is_regular_file(baseline), "Requested real native baseline does not exist");
             for (std::size_t index = 0; index < 2; ++index) {
                 try {

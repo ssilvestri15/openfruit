@@ -1,4 +1,5 @@
 ﻿#include "compiler_rt_support.hpp"
+#include "utf8_path.hpp"
 #include "win32_process.hpp"
 #include "tool_paths.hpp"
 #include "atomic_file.hpp"
@@ -444,7 +445,7 @@ std::vector<fs::path> DependencyPaths(const std::string& contents, const fs::pat
     std::string token;
     auto emit = [&] {
         if (!token.empty()) {
-            fs::path path = fs::u8path(token);
+            fs::path path = Utf8Path(token);
             if (path.is_relative()) path = cwd / path;
             result.push_back(path.lexically_normal());
             token.clear();
@@ -477,7 +478,7 @@ bool CacheValid(const fs::path& object, const fs::path& stamp, const std::string
     if (!dependencies || !dependencies->IsArray() || dependencies->ArrayItems().empty()) return false;
     for (const auto& dependency : dependencies->ArrayItems()) {
         if (!Active()) return false;
-        const auto actual = Sha256File(fs::u8path(dependency.GetString("path")));
+        const auto actual = Sha256File(Utf8Path(dependency.GetString("path")));
         if (!actual || *actual != dependency.GetString("sha256")) return false;
     }
     return true;

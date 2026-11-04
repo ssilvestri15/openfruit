@@ -1,3 +1,4 @@
+#include "utf8_path.hpp"
 #include "cli_commands.hpp"
 #include "config.hpp"
 #include "application_service.hpp"
@@ -1476,7 +1477,7 @@ int RunCommand(int argc, char* argv[], std::shared_ptr<EventJournal> journal) {
             std::cerr << "Usage: openfruit verify <path-to-ipa> [--json]\n";
             return 2;
         }
-        fs::path ipa_path = fs::u8path(argv[2]);
+        fs::path ipa_path = Utf8Path(argv[2]);
         if (!fs::exists(ipa_path)) {
             std::cerr << "OPENFRUIT: IPA archive not found: " << argv[2] << "\n";
             return 1;
