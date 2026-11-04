@@ -2,7 +2,6 @@
   <img src="branding/openfruit-banner.svg" alt="OpenFruit" width="720">
 </p>
 
-[![Build OpenFruit Core](https://github.com/ssilvestri15/openfruit/actions/workflows/build-openfruit-core.yml/badge.svg)](https://github.com/ssilvestri15/openfruit/actions/workflows/build-openfruit-core.yml)
 [![License: GPL-2.0-or-later](https://img.shields.io/badge/License-GPL--2.0--or--later-blue.svg)](LICENSE)
 
 Hi everyone!
@@ -212,5 +211,7 @@ If OpenFruit creates commercial value for you, we ask you to donate part of it t
 ## Contributing
 
 Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md): every contribution requires accepting the [Contributor License Agreement](CLA.md).
+
+---
 
 Made with ❤️ by Simone and his friend AI 🤖
