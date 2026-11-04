@@ -737,10 +737,14 @@ int main(int argc, char** argv) {
         // under test here. No Mach-O offsets/page hashes are pre-resolved.
         const auto clang = ToolPaths::SwiftBin({}) / "clang.exe";
         const auto lld = ToolPaths::LlvmBin({}) / "ld64.lld.exe";
-        Require(fs::is_regular_file(clang) && fs::is_regular_file(lld), "native signing test requires real managed Clang and Mach-O LLD");
+        // Without the managed toolchain (a clean CI machine) only this native
+        // Mach-O stage is skipped; every other check still runs and the test
+        // reports itself skipped rather than passed.
+        const bool native_tools = fs::is_regular_file(clang) && fs::is_regular_file(lld);
+        if (!native_tools) std::cerr << "SKIP: native Mach-O signing stage needs managed Clang and ld64.lld\n";
         const auto owned_source = root / "signing-probe.c";
         File(owned_source, "volatile char data[5000] = {1}; int main(void) { return data[0]; }\n");
-        for (const auto& architecture : {std::wstring(L"arm64"), std::wstring(L"x86_64")}) {
+        if (native_tools) for (const auto& architecture : {std::wstring(L"arm64"), std::wstring(L"x86_64")}) {
             const auto object = root / (architecture + L".o"), executable_path = root / (architecture + L"-probe");
             const auto triple = architecture == L"arm64" ? L"arm64-apple-ios17.0" : L"x86_64-apple-ios17.0-simulator";
             const auto platform = architecture == L"arm64" ? L"ios" : L"ios-simulator";
@@ -1131,6 +1135,7 @@ int main(int argc, char** argv) {
         Require(!ValidateProvisioningRequestedEntitlements(profile, app, root / "missing.entitlements", {}, error), "missing configured entitlements silently discarded");
         Require(Bytes(fs::path(packaging.code_sign_entitlements_path)) == original_entitlements,
             "signing preflight modified upstream entitlement contents");
+        if (!native_tools) return 77;
         std::cout << "PASS: actual bundle inputs and ephemeral credentials reject unauthorized identities/rights/certificates before signing\n";
         return 0;
     } catch (const std::exception& ex) { std::cerr << "FAIL: " << ex.what() << "\n"; return 1; }

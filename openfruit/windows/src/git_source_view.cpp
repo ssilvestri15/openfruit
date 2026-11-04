@@ -638,7 +638,7 @@ struct Builder {
                     Record({relative, physical, target, "alias", {}}, original);
                     return;
                 }
-                fs::create_directories(output.parent_path());
+                fs::create_directories(fs::path(LongName(output.parent_path())));
                 auto link = output.wstring();
                 if (link.rfind(L"\\\\?\\", 0) != 0)
                     link = link.rfind(L"\\\\", 0) == 0
@@ -657,7 +657,7 @@ struct Builder {
             if (inventory_only && plain_directory)
                 entries.push_back({relative, physical, {}, "directory", {}, "directory", {}});
             else if (inventory_only) Record({relative, physical, {}, "directory", {}}, original);
-            else fs::create_directories(output);
+            else fs::create_directories(fs::path(LongName(output)));
             std::set<fs::path, InsensitiveLess> names;
             for (const auto& entry : fs::directory_iterator(physical)) {
                 const auto name = entry.path().filename();
@@ -715,8 +715,10 @@ struct Builder {
                 Record({relative, physical, {}, "file", *digest}, original);
                 return;
             }
-            std::ifstream input(physical, std::ios::binary);
-            std::ofstream out(output, std::ios::binary | std::ios::trunc);
+            // Extended-length names: a projection can pass MAX_PATH even
+            // where the process is not long-path aware.
+            std::ifstream input(fs::path(LongName(physical)), std::ios::binary);
+            std::ofstream out(fs::path(LongName(output)), std::ios::binary | std::ios::trunc);
             if (!input || !out) Fail("cannot copy source", original);
             std::vector<char> block(65536);
             while (input) {

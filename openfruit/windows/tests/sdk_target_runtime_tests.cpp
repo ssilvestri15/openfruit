@@ -196,7 +196,9 @@ int main(int argc, char** argv) {
         return result.available ? 0 : 1;
     }
     if (argc != 1) return 2;
-    const auto root = fs::temp_directory_path() / ("o-" + NewOperationId().substr(0, 16));
+    // The physical temporary directory: retention reports physical entries.
+    const auto temp = fs::canonical(fs::temp_directory_path());
+    const auto root = temp / ("o-" + NewOperationId().substr(0, 16));
     try {
         fs::create_directories(root / "custom.sdk");
         std::ofstream(root / "custom.sdk" / "SDKSettings.json") << "{\"Version\":\"27.0\"}";
@@ -234,7 +236,7 @@ int main(int argc, char** argv) {
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';
-        if (fs::exists(root) && root.parent_path() == fs::temp_directory_path()) fs::remove_all(root);
+        if (fs::exists(root) && root.parent_path() == temp) fs::remove_all(root);
         return 1;
     }
 }

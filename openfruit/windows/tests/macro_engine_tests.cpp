@@ -138,7 +138,8 @@ int main() {
     const DWORD count = GetModuleFileNameW(nullptr, own_buffer, 32768);
     if (!count || count == 32768) return 2;
     const fs::path own(own_buffer);
-    const fs::path root = fs::temp_directory_path() /
+    // The physical temporary directory: plugin admission reports physical paths.
+    const fs::path root = fs::canonical(fs::temp_directory_path()) /
         ("OPENFRUIT-macro-provider-" + std::to_string(GetCurrentProcessId()) + "-" + std::to_string(GetTickCount64()));
     try {
         // Capture the real selected compiler before the isolated fixture changes

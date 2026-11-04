@@ -89,7 +89,8 @@ struct Fixture {
 };
 }
 int main() {
-    const auto root = fs::temp_directory_path() / ("openfruit-darwin-provider-" + std::to_string(GetCurrentProcessId()) + "-" + std::to_string(GetTickCount64()));
+    // The physical temporary directory: receipt discovery reports physical paths.
+    const auto root = fs::canonical(fs::temp_directory_path()) / ("openfruit-darwin-provider-" + std::to_string(GetCurrentProcessId()) + "-" + std::to_string(GetTickCount64()));
     try {
         Fixture fixture(root); DarwinMacroProvider output; std::string error;
         Require(ReadDarwinMacroProvider(fixture.receipt, fixture.managed, output, error, fixture.sdk), error);

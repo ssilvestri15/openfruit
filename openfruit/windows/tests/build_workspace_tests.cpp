@@ -178,7 +178,8 @@ int main(int argc, char** argv) {
     fs::path root;
     try {
         Require(argc == 2, "fixture root required");
-        root = fs::temp_directory_path() / ("OPENFRUIT-build-workspace-" + NewOperationId());
+        // The physical temporary directory: Git reports the physical root.
+        root = fs::canonical(fs::temp_directory_path()) / ("OPENFRUIT-build-workspace-" + NewOperationId());
         TestExplicitSelection(fs::path(Win32Process::ToWide(argv[1])), root);
         const auto source = root / "original", output = root / "workspace";
         fs::create_directories(root);

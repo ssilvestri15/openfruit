@@ -510,7 +510,8 @@ void TestFileAliasIdentity(const fs::path& root) {
 }
 
 int main() {
-    auto root = fs::temp_directory_path() /
+    // The physical temporary directory: the resolver returns physical paths.
+    auto root = fs::canonical(fs::temp_directory_path()) /
         (L"OPENFRUIT-source-view-" + std::to_wstring(GetCurrentProcessId()) + L"-" +
          std::to_wstring(GetTickCount64()));
     try {

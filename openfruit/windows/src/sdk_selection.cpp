@@ -300,11 +300,19 @@ SDKRemovalResult CleanupTransaction(const fs::path& receipt_path, const fs::path
         if (current.ios_sdk_paths.count(version) || current.ios_sdk_version == version ||
             GetFileAttributesW(Extended(original).c_str()) != INVALID_FILE_ATTRIBUTES ||
             !SDKCatalog::RegistrationTargetMissing(original)) return result;
+        // Registered and protected paths are compared physically: the receipt
+        // may spell the same directories through an alias or a short name.
+        std::error_code physical_error;
+        const auto physical_original = fs::weakly_canonical(original, physical_error);
+        if (physical_error) return result;
+        const auto physical_quarantine = fs::weakly_canonical(quarantine, physical_error);
+        if (physical_error) return result;
         const auto overlaps = [&](const fs::path& candidate) {
             if (candidate.empty()) return false;
             std::error_code error;
             const auto resolved = fs::weakly_canonical(candidate, error);
-            return error || Overlap(original, resolved) || Overlap(quarantine, resolved);
+            return error || Overlap(original, resolved) || Overlap(quarantine, resolved) ||
+                Overlap(physical_original, resolved) || Overlap(physical_quarantine, resolved);
         };
         if (overlaps(current.sdk_path) || overlaps(current.macos_sdk_path)) return result;
         for (const auto& [_, path] : current.ios_sdk_paths) if (overlaps(path)) return result;
@@ -313,7 +321,8 @@ SDKRemovalResult CleanupTransaction(const fs::path& receipt_path, const fs::path
             if (path.empty()) return false;
             std::error_code error;
             const auto resolved = fs::weakly_canonical(path, error);
-            return error || Contains(original, resolved) || Contains(quarantine, resolved);
+            return error || Contains(original, resolved) || Contains(quarantine, resolved) ||
+                Contains(physical_original, resolved) || Contains(physical_quarantine, resolved);
         };
         if (protected_inside(configuration) || protected_inside(current.OPENFRUIT_home) ||
             protected_inside(current.user_state_root) || protected_inside(current.xcode_path)) return result;

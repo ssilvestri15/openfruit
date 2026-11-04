@@ -69,6 +69,16 @@ candidate (Swiftfin passed on it), then device install/launch.
 
 ## Open findings
 
+- The GitHub release run of `0.1.0-dev` failed 8 native tests (the runner's
+  TEMP is the 8.3 name `C:\Users\RUNNER~1`); fixed in `4b57f81` (long paths
+  in source view copies), `4206d69` (SDK cleanup deleted a registered
+  quarantine spelled through an alias) and `4f8c6e3` (test fixtures and
+  skips). With a managed Swift installed, four tests still fail when TEMP is
+  a junction (`swiftpm_source_workspace`, `swift_host_environment`,
+  `cache_read_operations`; junctions are refused by design, an 8.3 name is
+  not a junction) or about 46 characters long (`swiftpm_manifest_integrity`,
+  `swiftpm_source_workspace`, `swift_host_environment`). On a machine without
+  Swift they skip; the long-path cases are not diagnosed yet.
 - One Swiftfin emit-module run failed with "failed to receive result from
   plugin" on loadPluginLibrary; not reproduced since. On recurrence inspect
   `diagnostics/macro-runtime/sessions.jsonl` and `workers.log` before changing
