@@ -114,6 +114,8 @@ There is still a lot of work ahead.
 
 OpenFruit needs broader compatibility, stronger integration tests, and a reliable installation experience. OpenFruit Studio needs to turn those technical capabilities into an intuitive development environment.
 
+**A Linux version of OpenFruit is planned.** Today OpenFruit runs on Windows only.
+
 Neither project is production-ready, and I don't want to pretend otherwise.
 
 But I believe that **making technology accessible doesn't mean making it simple internally. It means taking on that complexity so others don't have to.**
