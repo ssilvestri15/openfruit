@@ -1,0 +1,103 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 77;
+	objects = {
+		A00000000000000000000001 = {
+			isa = PBXProject;
+			buildConfigurationList = A00000000000000000000002;
+			mainGroup = A00000000000000000000003;
+			targets = (A00000000000000000000004, A0000000000000000000000C,);
+		};
+		A00000000000000000000002 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (A00000000000000000000005, A0000000000000000000000F,);
+		};
+		A00000000000000000000003 = {
+			isa = PBXGroup;
+			children = (A00000000000000000000006, A0000000000000000000000B,);
+			sourceTree = "<group>";
+		};
+		A00000000000000000000004 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000007;
+			buildPhases = (A00000000000000000000009,);
+			name = Probe;
+			productType = "com.apple.product-type.application";
+		};
+		A00000000000000000000005 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {};
+			name = Debug;
+		};
+		A00000000000000000000006 = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Config;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000007 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (A00000000000000000000008, A00000000000000000000010,);
+		};
+		A00000000000000000000008 = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = A00000000000000000000006;
+			baseConfigurationReferenceRelativePath = Shared.xcconfig;
+			buildSettings = {};
+			name = Debug;
+		};
+        A00000000000000000000009 = {
+            isa = PBXSourcesBuildPhase;
+            files = (A0000000000000000000000A,);
+        };
+        A0000000000000000000000A = {
+            isa = PBXBuildFile;
+            fileRef = A0000000000000000000000B;
+        };
+        A0000000000000000000000B = {
+            isa = PBXFileReference;
+            lastKnownFileType = sourcecode.swift;
+            path = Owned.swift;
+            sourceTree = "<group>";
+        };
+        A0000000000000000000000C = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = A0000000000000000000000D;
+            buildPhases = (A00000000000000000000009,);
+            name = OwnedExtension;
+            productType = "com.apple.product-type.app-extension";
+        };
+        A0000000000000000000000D = {
+            isa = XCConfigurationList;
+            buildConfigurations = (A0000000000000000000000E, A00000000000000000000011,);
+        };
+        A0000000000000000000000E = {
+            isa = XCBuildConfiguration;
+            baseConfigurationReferenceAnchor = A00000000000000000000006;
+            baseConfigurationReferenceRelativePath = Extension.xcconfig;
+            buildSettings = {};
+            name = Debug;
+        };
+        A0000000000000000000000F = {
+            isa = XCBuildConfiguration;
+            buildSettings = {};
+            name = Release;
+        };
+        A00000000000000000000010 = {
+            isa = XCBuildConfiguration;
+            baseConfigurationReferenceAnchor = A00000000000000000000006;
+            baseConfigurationReferenceRelativePath = Plain.xcconfig;
+            buildSettings = {};
+            name = Release;
+        };
+        A00000000000000000000011 = {
+            isa = XCBuildConfiguration;
+            baseConfigurationReferenceAnchor = A00000000000000000000006;
+            baseConfigurationReferenceRelativePath = PlainExtension.xcconfig;
+            buildSettings = {};
+            name = Release;
+        };
+    };
+    rootObject = A00000000000000000000001;
+}

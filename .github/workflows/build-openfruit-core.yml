@@ -1,0 +1,59 @@
+name: Build OpenFruit Core (Windows)
+
+on:
+  push:
+    branches: [ main, master, openfruit ]
+    paths:
+      - 'openfruit/windows/**'
+      - 'openib/**'
+      - '.github/workflows/build-openfruit-core.yml'
+  pull_request:
+    branches: [ main, master, openfruit ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Build OpenFruit Core on Windows x64
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup LLVM & Clang
+        uses: KyleMayes/install-llvm-action@v2
+        with:
+          version: "20.1.8"
+
+      - name: Verify Clang Compiler
+        run: |
+          clang --version
+          clang-cl /?
+
+      - name: Build OpenFruit Core & Run Tests
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\openfruit\windows\build.ps1 -WithTests
+
+      - name: Test OpenFruit CLI Help & Capabilities
+        run: |
+          $OpenFruitExe = Join-Path $env:LOCALAPPDATA "OpenFruit\bin\openfruit.exe"
+          & $OpenFruitExe --help
+          & $OpenFruitExe version
+          & $OpenFruitExe capabilities
+
+      - name: Package Binary Artifact
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $OpenFruitExe = Join-Path $env:LOCALAPPDATA "OpenFruit\bin\openfruit.exe"
+          $OpenIbExe = Join-Path $env:LOCALAPPDATA "OpenFruit\bin\openib.exe"
+          Copy-Item -Path $OpenFruitExe -Destination "dist\" -Force
+          Copy-Item -Path $OpenIbExe -Destination "dist\" -Force
+          Copy-Item -Path "README.md" -Destination "dist\" -Force
+          Compress-Archive -Path "dist\*" -DestinationPath "openfruit-windows-x64.zip"
+
+      - name: Upload OpenFruit Core Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openfruit-windows-x64
+          path: openfruit-windows-x64.zip
+          retention-days: 30

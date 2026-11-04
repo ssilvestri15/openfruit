@@ -1,0 +1,4 @@
+#include "Shared.xcconfig"
+PRODUCT_BUNDLE_IDENTIFIER = org.OPENFRUIT.signing-identity-probe.extension
+CODE_SIGN_ENTITLEMENTS = $(SRCROOT)/Config/Extension.entitlements
+OWNED_APP_GROUP = group.org.OPENFRUIT.extension-only

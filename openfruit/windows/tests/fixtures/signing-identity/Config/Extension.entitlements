@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0"><dict>
+  <key>application-identifier</key>
+  <string>$(AppIdentifierPrefix)$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+  <key>com.apple.security.application-groups</key>
+  <array><string>$(OWNED_APP_GROUP)</string></array>
+</dict></plist>

@@ -1,0 +1,251 @@
+{
+  "schema_version": 1,
+  "shared_writer": "main",
+  "shared_files": [
+    "AGENTS.md",
+    "docs/DARWIN_CONTRACT_LEDGER.json",
+    "docs/DARWIN_CONTRACT_CATALOG.json",
+    "docs/CURRENT_CHECKPOINT.md",
+    "docs/ARCHITECTURE_COMPLETION_PLAN.md",
+    "openfruit/windows/CMakeLists.txt",
+    "openfruit/windows/src/darwin_arm64.cpp",
+    "openfruit/windows/src/darwin_image.cpp",
+    "openfruit/windows/src/darwin_mapping.cpp",
+    "openfruit/windows/tests/darwin_tagged_rebase_tests.cpp",
+    "openfruit/windows/src/darwin_closure.cpp",
+    "openfruit/windows/src/main.cpp",
+    "scripts/darwin_coverage.py",
+    "openfruit/windows/src/darwin_pointer_auth.cpp",
+    "openfruit/windows/src/darwin_pointer_auth.hpp",
+    "openfruit/windows/tests/darwin_pointer_auth_tests.cpp",
+    "openfruit/windows/src/darwin_mapping.hpp",
+    "openfruit/windows/tests/darwin_image_tests.cpp"
+  ],
+  "subsystems": [
+    {
+      "id": "darwin_bsd_vfs",
+      "description": "BSD VFS and file metadata",
+      "owned_files": [
+        "openfruit/windows/src/darwin_files.cpp",
+        "openfruit/windows/src/darwin_files.hpp",
+        "openfruit/windows/tests/darwin_files_tests.cpp",
+        "openfruit/windows/src/darwin_file_metadata.cpp",
+        "openfruit/windows/src/darwin_file_metadata.hpp",
+        "openfruit/windows/tests/darwin_file_metadata_tests.cpp",
+        "openfruit/windows/src/darwin_file_signature.cpp",
+        "openfruit/windows/src/darwin_file_signature.hpp",
+        "openfruit/windows/tests/darwin_file_signature_tests.cpp",
+        "openfruit/windows/src/darwin_sysctl.cpp",
+        "openfruit/windows/src/darwin_sysctl.hpp",
+        "openfruit/windows/tests/darwin_sysctl_tests.cpp",
+        "openfruit/windows/src/darwin_process_identity.cpp",
+        "openfruit/windows/src/darwin_process_identity.hpp",
+        "openfruit/windows/tests/darwin_process_identity_tests.cpp",
+        "openfruit/windows/tests/darwin_nocancel_tests.cpp"
+      ],
+      "dependencies": [],
+      "module_boundary": "Existing modules only; Main owns shared runtime glue. New paths require explicit Main assignment."
+    },
+    {
+      "id": "darwin_mach_vm",
+      "description": "Mach VM and memory",
+      "owned_files": [
+        "openfruit/windows/src/darwin_vm_backing.cpp",
+        "openfruit/windows/src/darwin_vm_backing.hpp",
+        "openfruit/windows/tests/darwin_vm_backing_tests.cpp",
+        "openfruit/windows/src/darwin_file_mapping.cpp",
+        "openfruit/windows/src/darwin_file_mapping.hpp",
+        "openfruit/windows/tests/darwin_file_mapping_tests.cpp"
+      ],
+      "dependencies": [
+        "darwin_bsd_vfs"
+      ],
+      "module_boundary": "Existing modules only; Main owns shared runtime glue. New paths require explicit Main assignment."
+    },
+    {
+      "id": "darwin_mach_ipc",
+      "description": "Mach IPC MIG and port rights",
+      "owned_files": [],
+      "dependencies": [
+        "darwin_mach_vm",
+        "darwin_pthread"
+      ],
+      "module_boundary": "Existing modules only; Main owns shared runtime glue. New paths require explicit Main assignment."
+    },
+    {
+      "id": "darwin_pthread",
+      "description": "pthread TLS scheduler and synchronization",
+      "owned_files": [
+        "openfruit/windows/src/darwin_pthread_registration.cpp",
+        "openfruit/windows/src/darwin_pthread_registration.hpp",
+        "openfruit/windows/tests/darwin_pthread_registration_tests.cpp",
+        "openfruit/windows/src/darwin_thread_context.cpp",
+        "openfruit/windows/src/darwin_thread_context.hpp",
+        "openfruit/windows/tests/darwin_thread_context_tests.cpp",
+        "openfruit/windows/tests/darwin_workqueue_tests.cpp",
+        "openfruit/windows/src/darwin_thread_run_queue.cpp",
+        "openfruit/windows/src/darwin_thread_run_queue.hpp",
+        "openfruit/windows/tests/darwin_thread_run_queue_tests.cpp",
+        "openfruit/windows/src/darwin_pthread_creation.hpp",
+        "openfruit/windows/src/darwin_pthread_creation.cpp",
+        "openfruit/windows/tests/darwin_pthread_creation_tests.cpp",
+        "openfruit/windows/src/darwin_pthread_policy.cpp",
+        "openfruit/windows/src/darwin_pthread_policy.hpp",
+        "openfruit/windows/tests/darwin_pthread_policy_tests.cpp"
+      ],
+      "dependencies": [
+        "darwin_mach_vm",
+        "darwin_mach_ipc"
+      ],
+      "module_boundary": "Existing modules only; Main owns shared runtime glue. New paths require explicit Main assignment."
+    },
+    {
+      "id": "darwin_objc",
+      "description": "Original Objective-C guest runtime and host contracts",
+      "owned_files": [],
+      "dependencies": [
+        "darwin_pthread",
+        "darwin_mach_vm",
+        "darwin_mach_ipc"
+      ],
+      "module_boundary": "Existing modules only; Main owns shared runtime glue. New paths require explicit Main assignment."
+    },
+    {
+      "id": "darwin_swift_transport",
+      "description": "Original Swift guest runtime and plugin transport",
+      "owned_files": [],
+      "dependencies": [
+        "darwin_objc",
+        "darwin_pthread",
+        "darwin_bsd_vfs",
+        "darwin_mach_ipc"
+      ],
+      "module_boundary": "Existing modules only; Main owns shared runtime glue. New paths require explicit Main assignment."
+    },
+    {
+      "id": "macro_audit",
+      "description": "Swift macro / compiler-plugin ecosystem inventory",
+      "owned_files": [
+        "docs/MACRO_COMPATIBILITY_INVENTORY.json",
+        "docs/MACRO_COMPATIBILITY.md"
+      ],
+      "dependencies": [],
+      "module_boundary": "Inventory and documentation only; no runtime source edits."
+    },
+    {
+      "id": "windows_macro_host",
+      "description": "Native Windows macro host and compiler-plugin protocol",
+      "owned_files": [
+        "native/macro-host/main.cpp",
+        "native/macro-host/CMakeLists.txt",
+        "openfruit/windows/src/macro_engine.cpp",
+        "openfruit/windows/src/macro_engine.hpp",
+        "openfruit/windows/tests/macro_host_protocol_tests.cpp"
+      ],
+      "dependencies": [
+        "macro_audit"
+      ],
+      "module_boundary": "Owned macro host modules; CMake and main.cpp changes are proposals to Main."
+    },
+    {
+      "id": "build_integration",
+      "description": "Pipeline integration and macro-path performance measurement",
+      "owned_files": [],
+      "dependencies": [
+        "windows_macro_host",
+        "darwin_swift_transport"
+      ],
+      "module_boundary": "Measurements under the user diagnostic root; source edits only by explicit Main assignment."
+    }
+  ],
+  "ledger_owners": {
+    "file.signature.registration": "darwin_bsd_vfs",
+    "file.library.validation.ordinary": "darwin_bsd_vfs",
+    "file.metadata.readonly": "darwin_bsd_vfs",
+    "file.private.mapping": "darwin_mach_vm",
+    "file.native.output": "darwin_bsd_vfs",
+    "filesystem.namespace": "darwin_bsd_vfs",
+    "task.identity.status": "darwin_bsd_vfs",
+    "sysctl.readonly.registry": "darwin_bsd_vfs",
+    "loader.amfi.atpaths": "main",
+    "mach.task.ports": "darwin_mach_ipc",
+    "mach.message.mig": "darwin_mach_ipc",
+    "mach.virtual.memory": "darwin_mach_vm",
+    "commpage.geometry.clock": "main",
+    "pthread.registration": "darwin_pthread",
+    "pthread.scheduler": "darwin_pthread",
+    "tls.thread.variables": "darwin_pthread",
+    "objective-c.initialization": "darwin_objc",
+    "swift.initialization": "darwin_swift_transport",
+    "plugin.transport.original": "darwin_swift_transport",
+    "arm64e.execution": "main",
+    "cpu.capability.dit": "main",
+    "commpage.boottime.usec": "main",
+    "commpage.calendar.fastpath": "main",
+    "bsd.gettimeofday.timeval64": "darwin_bsd_vfs",
+    "bsd.getentropy": "darwin_bsd_vfs",
+    "mach.port.name.encoding": "darwin_mach_ipc",
+    "mach.vm.map.anonymous.tagged": "darwin_mach_vm",
+    "mach.vm.map.fixed.overwrite": "darwin_mach_vm",
+    "vm.fixed.mapping.ownership": "darwin_mach_vm",
+    "clock.timebase.info": "main",
+    "bsd.credentials.readonly": "darwin_bsd_vfs",
+    "bsd.csops.readonly.metadata": "darwin_bsd_vfs",
+    "arm64e.pac.failure.diagnostics": "main",
+    "mach.restartable.singlethread": "darwin_mach_ipc",
+    "pthread.registration.copyin": "darwin_pthread",
+    "pthread.cpu.context": "darwin_pthread",
+    "pthread.runqueue.bounded": "darwin_pthread",
+    "pthread.creation.arm64.prepare": "darwin_pthread",
+    "mach.task.special_ports.bounded": "darwin_mach_ipc",
+    "filesystem.descriptions.bounded": "darwin_bsd_vfs",
+    "pthread.policy.qos.encoding": "darwin_pthread",
+    "pthread.bsdthreadctl.setself": "darwin_pthread",
+    "arm64e.function.pointer.authentication": "main",
+    "mach.thread.lifecycle.bounded": "darwin_mach_ipc",
+    "arm64e.thread.state.creation": "main",
+    "loader.chained.rebase.high8": "main",
+    "pthread.registration.state-copyout": "darwin_pthread",
+    "pthread.policy.queue-priority": "darwin_pthread",
+    "arm64e.function.pointer.conversion": "main",
+    "pthread.workqueue.arm64.upcall.prepare": "darwin_pthread",
+    "pthread.workqueue.ordinary.lifecycle": "darwin_pthread",
+    "pthread.context.workqueue.reuse": "darwin_pthread",
+    "pthread.workqueue.dispatch.configuration": "darwin_pthread",
+    "pthread.signal-mask.thread-state": "darwin_pthread",
+    "pthread.setself.task.providers": "darwin_pthread",
+    "pthread.scheduler.measured.timeshare": "darwin_pthread",
+    "pthread.voucher.empty.namespace": "darwin_pthread",
+    "pthread.registration.native.feature-return": "darwin_pthread",
+    "arm64e.task.jop.policy": "main",
+    "mach.task.info.audit-token": "darwin_mach_ipc",
+    "bsd.csops.audit-token": "darwin_bsd_vfs",
+    "bsd.vfs.nocancel.dispatch": "darwin_bsd_vfs",
+    "commpage.atm.diagnostic-config": "main",
+    "mach.message.receive.empty-poll": "darwin_mach_ipc"
+  },
+  "catalog_rules": {
+    "mig_vm_subsystem": "darwin_mach_vm",
+    "other_mig_wire_contracts": "darwin_mach_ipc",
+    "mach_vm": "darwin_mach_vm",
+    "mach_scheduling": "darwin_pthread",
+    "mach_clock": "main",
+    "bsd_default": "darwin_bsd_vfs",
+    "bsd_pthread_tokens": [
+      "pthread",
+      "bsdthread",
+      "workq",
+      "psynch",
+      "ulock"
+    ],
+    "bsd_vm_names": [
+      "mmap",
+      "munmap",
+      "mprotect",
+      "madvise",
+      "mincore",
+      "map_with_linking_np",
+      "shared_region_check_np"
+    ]
+  }
+}

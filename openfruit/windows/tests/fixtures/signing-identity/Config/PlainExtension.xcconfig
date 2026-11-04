@@ -1,0 +1,2 @@
+#include "Extension.xcconfig"
+CODE_SIGN_ENTITLEMENTS =

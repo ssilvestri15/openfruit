@@ -1,0 +1,169 @@
+NIBArchive format=1 coder=10 objects=27 keys=43 values=141 classes=11
+[0] NSObject
+  UINibTopLevelObjectsKey = (ref) @1
+  UINibConnectionsKey = (ref) @21
+  UINibObjectsKey = (ref) @26
+[1] NSArray
+  NSInlinedValue = (true) true
+  UINibEncoderEmptyKey = (ref) @2
+[2] UIView
+  UIAutoresizeSubviews = (true) true
+  UIBounds = (bytes) <33 bytes>
+  UICenter = (bytes) <17 bytes>
+  UIAutoresizingMask = (i8) 18
+  UIBackgroundColor = (ref) @3
+  UISubviews = (ref) @4
+  UIViewAutolayoutConstraints = (ref) @14
+[3] UIColor
+  UIColorComponentCount = (i8) 4
+  UIRed = (double) 0.147281
+  UIGreen = (double) 0.147281
+  UIBlue = (double) 0.147281
+  UIAlpha = (double) 1
+  UIColorSpace = (i8) 2
+  NSRGB = (bytes) "0.147 0.147 0.147"
+[4] NSArray
+  NSInlinedValue = (true) true
+  UINibEncoderEmptyKey = (ref) @5
+  UINibEncoderEmptyKey = (ref) @10
+  UINibEncoderEmptyKey = (ref) @12
+[5] UIImageView
+  UIViewDoesNotTranslateAutoresizingMaskIntoConstraints = (true) true
+  UIUserInteractionDisabled = (true) true
+  UIAutoresizeSubviews = (true) true
+  UIImage = (ref) @6
+  UIBounds = (bytes) <33 bytes>
+  UICenter = (bytes) <17 bytes>
+  UIViewAutolayoutConstraints = (ref) @8
+[6] UIImageNibPlaceholder
+  UIResourceName = (ref) @7
+[7] NSString
+  NS.bytes = (bytes) "Delta"
+[8] NSArray
+  NSInlinedValue = (true) true
+  UINibEncoderEmptyKey = (ref) @9
+[9] NSLayoutConstraint
+  NSFirstItem = (ref) @5
+  NSFirstAttribute = (i8) 7
+  NSFirstAttributeV2 = (i8) 7
+  NSSecondAttribute = (i8) 8
+  NSSecondAttributeV2 = (i8) 8
+  NSConstant = (double) 0
+  NSConstantV2 = (double) 0
+  NSShouldBeArchived = (true) true
+  NSRelation = (i8) 0
+  NSSecondItem = (ref) @5
+[10] _UILayoutGuide
+  UIOpaque = (true) true
+  UIHidden = (true) true
+  UIAutoresizeSubviews = (true) true
+  UIViewDoesNotTranslateAutoresizingMaskIntoConstraints = (true) true
+  _UILayoutGuideIdentifier = (ref) @11
+[11] NSString
+  NS.bytes = (bytes) "_UIViewControllerTop"
+[12] _UILayoutGuide
+  UIOpaque = (true) true
+  UIHidden = (true) true
+  UIAutoresizeSubviews = (true) true
+  UIViewDoesNotTranslateAutoresizingMaskIntoConstraints = (true) true
+  _UILayoutGuideIdentifier = (ref) @13
+[13] NSString
+  NS.bytes = (bytes) "_UIViewControllerBottom"
+[14] NSArray
+  NSInlinedValue = (true) true
+  UINibEncoderEmptyKey = (ref) @15
+  UINibEncoderEmptyKey = (ref) @16
+  UINibEncoderEmptyKey = (ref) @17
+  UINibEncoderEmptyKey = (ref) @18
+  UINibEncoderEmptyKey = (ref) @19
+  UINibEncoderEmptyKey = (ref) @20
+[15] NSLayoutConstraint
+  NSFirstAttribute = (i8) 7
+  NSFirstAttributeV2 = (i8) 7
+  NSSecondAttribute = (i8) 7
+  NSSecondAttributeV2 = (i8) 7
+  NSConstant = (double) 0
+  NSConstantV2 = (double) 0
+  NSShouldBeArchived = (true) true
+  NSRelation = (i8) -1
+  NSMultiplier = (double) 0.75
+  NSFirstItem = (ref) @5
+  NSSecondItem = (ref) @2
+[16] NSLayoutConstraint
+  NSFirstAttribute = (i8) 10
+  NSFirstAttributeV2 = (i8) 10
+  NSSecondAttribute = (i8) 10
+  NSSecondAttributeV2 = (i8) 10
+  NSConstant = (double) 0
+  NSConstantV2 = (double) 0
+  NSShouldBeArchived = (true) true
+  NSRelation = (i8) 0
+  NSFirstItem = (ref) @5
+  NSSecondItem = (ref) @2
+[17] NSLayoutConstraint
+  NSFirstAttribute = (i8) 8
+  NSFirstAttributeV2 = (i8) 8
+  NSSecondAttribute = (i8) 8
+  NSSecondAttributeV2 = (i8) 8
+  NSConstant = (double) 0
+  NSConstantV2 = (double) 0
+  NSShouldBeArchived = (true) true
+  NSPriority = (i16) 900
+  NSRelation = (i8) 0
+  NSMultiplier = (double) 0.75
+  NSFirstItem = (ref) @5
+  NSSecondItem = (ref) @2
+[18] NSLayoutConstraint
+  NSFirstAttribute = (i8) 7
+  NSFirstAttributeV2 = (i8) 7
+  NSSecondAttribute = (i8) 7
+  NSSecondAttributeV2 = (i8) 7
+  NSConstant = (double) 0
+  NSConstantV2 = (double) 0
+  NSShouldBeArchived = (true) true
+  NSPriority = (i16) 950
+  NSRelation = (i8) 0
+  NSMultiplier = (double) 0.75
+  NSFirstItem = (ref) @5
+  NSSecondItem = (ref) @2
+[19] NSLayoutConstraint
+  NSFirstAttribute = (i8) 9
+  NSFirstAttributeV2 = (i8) 9
+  NSSecondAttribute = (i8) 9
+  NSSecondAttributeV2 = (i8) 9
+  NSConstant = (double) 0
+  NSConstantV2 = (double) 0
+  NSShouldBeArchived = (true) true
+  NSRelation = (i8) 0
+  NSFirstItem = (ref) @5
+  NSSecondItem = (ref) @2
+[20] NSLayoutConstraint
+  NSFirstAttribute = (i8) 8
+  NSFirstAttributeV2 = (i8) 8
+  NSSecondAttribute = (i8) 8
+  NSSecondAttributeV2 = (i8) 8
+  NSConstant = (double) 0
+  NSConstantV2 = (double) 0
+  NSShouldBeArchived = (true) true
+  NSRelation = (i8) -1
+  NSMultiplier = (double) 0.75
+  NSFirstItem = (ref) @5
+  NSSecondItem = (ref) @2
+[21] NSArray
+  NSInlinedValue = (true) true
+  UINibEncoderEmptyKey = (ref) @22
+[22] UIRuntimeOutletConnection
+  UILabel = (ref) @23
+  UISource = (ref) @24
+  UIDestination = (ref) @2
+[23] NSString
+  NS.bytes = (bytes) "view"
+[24] UIProxyObject
+  UIProxiedObjectIdentifier = (ref) @25
+[25] NSString
+  NS.bytes = (bytes) "IBFilesOwner"
+[26] NSArray
+  NSInlinedValue = (true) true
+  UINibEncoderEmptyKey = (ref) @2
+  UINibEncoderEmptyKey = (ref) @5
+  UINibEncoderEmptyKey = (ref) @24

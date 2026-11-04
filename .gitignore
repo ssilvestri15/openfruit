@@ -1,0 +1,65 @@
+/build/
+/.build/
+/toolchain/
+/.secrets/
+.env
+.env.*
+!.env.example
+*.user
+*.log
+samples/spm/BinaryConsumer/Artifacts/**/*.a
+samples/spm/BinaryConsumer/Artifacts/**/*.o
+/root.json
+
+# Generated SwiftPM state
+**/.build/
+
+# Editor temporary files
+*~
+*.swp
+*.swo
+*-current.cpp
+capture-*.ps1
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Fork isolated runtime state
+/.fork-data/
+
+# Local OPENFRUIT build artifacts and fonts
+OPENFRUIT/windows/build/
+fonts/
+/dist/
+
+# Legacy local material kept on disk but not published
+/BOOTSTRAP_PROMPT.md
+/compatibility/
+/patches/
+/samples/
+/tests/
+/scratch/
+/native/darling-host-bridge/
+/openfruit/windows/README-V4.md
+/openfruit/windows/VALIDATION.txt
+/openfruit/windows/tools/
+/scripts/*.ps1
+/scripts/make_ipa.py
+/scripts/wifi-device.py
+/scripts/support/
+/docs/*
+!/docs/OBJECTIVE.md
+!/docs/DIAGNOSTIC_PROTOCOL.md
+!/docs/CURRENT_CHECKPOINT.md
+!/docs/CLEAN_START.md
+!/docs/ARCHITECTURE_COMPLETION_PLAN.md
+!/docs/WINDOWS_STANDALONE.md
+!/docs/ENVIRONMENT.md
+!/docs/MACRO_COMPATIBILITY.md
+!/docs/MACRO_COMPATIBILITY_INVENTORY.json
+!/docs/DARWIN_MULTI_AGENT.md
+!/docs/DARWIN_SUBSYSTEM_OWNERS.json
+!/docs/DARWIN_AGENT_RESULT.schema.json
+!/docs/DARWIN_CONTRACT_CATALOG.json
+!/docs/DARWIN_CONTRACT_LEDGER.json

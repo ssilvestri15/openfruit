@@ -1,0 +1,148 @@
+﻿// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 77;
+	objects = {
+		A00000000000000000000001 = {
+			isa = PBXProject;
+			buildConfigurationList = A00000000000000000000002;
+			mainGroup = A00000000000000000000003;
+			targets = (
+				A00000000000000000000004,
+				A00000000000000000000005,
+			);
+		};
+		A00000000000000000000002 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (A00000000000000000000006,);
+		};
+		A00000000000000000000003 = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000010,
+				A00000000000000000000011,
+				A00000000000000000000012,
+				A00000000000000000000013,
+			);
+			sourceTree = "<group>";
+		};
+		A00000000000000000000004 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000007;
+			buildPhases = (A00000000000000000000020,);
+			dependencies = (A00000000000000000000030,);
+			name = ShellPhaseConsumer;
+			productName = ShellPhaseConsumer;
+			productType = "com.apple.product-type.application";
+		};
+		A00000000000000000000005 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000008;
+			buildPhases = (
+				A00000000000000000000021,
+				A00000000000000000000022,
+			);
+			dependencies = ();
+			name = ShellPhaseProducer;
+			productName = ShellPhaseProducer;
+			productType = "com.apple.product-type.library.static";
+		};
+		A00000000000000000000006 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {};
+			name = Release;
+		};
+		A00000000000000000000007 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (A00000000000000000000009,);
+		};
+		A00000000000000000000008 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (A0000000000000000000000A,);
+		};
+		A00000000000000000000009 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				OTHER_CFLAGS = "-fmodule-map-file=$(BUILD_DIR)/$(CONFIGURATION)/ShellPhaseProducer/Generated.modulemap";
+				PRODUCT_BUNDLE_IDENTIFIER = dev.OPENFRUIT.shell-phase-consumer;
+				PRODUCT_MODULE_NAME = ShellPhaseConsumer;
+				PRODUCT_NAME = ShellPhaseConsumer;
+				SDKROOT = iphoneos;
+			};
+			name = Release;
+		};
+		A0000000000000000000000A = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CONFIGURATION_BUILD_DIR = "$(BUILD_DIR)/$(CONFIGURATION)/$(PRODUCT_NAME)";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				PRODUCT_MODULE_NAME = ShellPhaseProducer;
+				PRODUCT_NAME = ShellPhaseProducer;
+				SDKROOT = iphoneos;
+			};
+			name = Release;
+		};
+		A00000000000000000000010 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = Consumer.m;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000011 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = Producer.m;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000012 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = Generated.h;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000013 = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.module;
+			path = Generated.modulemap;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000020 = {
+			isa = PBXSourcesBuildPhase;
+			files = (A00000000000000000000040,);
+		};
+		A00000000000000000000021 = {
+			isa = PBXSourcesBuildPhase;
+			files = (A00000000000000000000041,);
+		};
+		A00000000000000000000022 = {
+			isa = PBXShellScriptBuildPhase;
+			inputPaths = (
+				"$(SRCROOT)/Generated.h",
+				"$(SRCROOT)/Generated.modulemap",
+			);
+			name = "Stage declared Clang module";
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/Generated.h",
+				"$(BUILT_PRODUCTS_DIR)/Generated.modulemap",
+			);
+			shellPath = /bin/sh;
+			shellScript = "mkdir -p \"$BUILT_PRODUCTS_DIR\"\ncp \"$SRCROOT/Generated.h\" \"$BUILT_PRODUCTS_DIR/Generated.h\"\ncp \"$SRCROOT/Generated.modulemap\" \"$BUILT_PRODUCTS_DIR/Generated.modulemap\"\n";
+		};
+		A00000000000000000000030 = {
+			isa = PBXTargetDependency;
+			name = ShellPhaseProducer;
+			target = A00000000000000000000005;
+		};
+		A00000000000000000000040 = {
+			isa = PBXBuildFile;
+			fileRef = A00000000000000000000010;
+		};
+		A00000000000000000000041 = {
+			isa = PBXBuildFile;
+			fileRef = A00000000000000000000011;
+		};
+	};
+	rootObject = A00000000000000000000001;
+}

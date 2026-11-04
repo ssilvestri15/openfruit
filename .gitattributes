@@ -1,0 +1,7 @@
+* text=auto eol=lf
+
+# Native Windows command scripts, if introduced
+*.bat text eol=crlf
+*.cmd text eol=crlf
+# Patch files contain diff markers where whitespace can be semantic.
+*.patch -whitespace

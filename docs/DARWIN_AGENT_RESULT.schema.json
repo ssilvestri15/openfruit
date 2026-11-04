@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OPENFRUIT Darwin subsystem result v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "subsystem",
+    "batch_id",
+    "status",
+    "contracts",
+    "files",
+    "tests",
+    "dependencies",
+    "errors",
+    "ledger_proposals"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "subsystem": {
+      "enum": [
+        "main",
+        "darwin_bsd_vfs",
+        "darwin_mach_vm",
+        "darwin_mach_ipc",
+        "darwin_pthread",
+        "darwin_objc",
+        "darwin_swift_transport",
+        "macro_audit",
+        "windows_macro_host",
+        "build_integration"
+      ]
+    },
+    "batch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "planned",
+        "implementation-ready",
+        "tests-requested",
+        "verified-scoped",
+        "needs-integration",
+        "blocked"
+      ]
+    },
+    "contracts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "scope",
+          "implementation"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "implementation": {
+            "enum": [
+              "implemented",
+              "partial",
+              "missing",
+              "unreviewed"
+            ]
+          }
+        }
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "target",
+          "result",
+          "level"
+        ],
+        "properties": {
+          "target": {
+            "type": "string"
+          },
+          "result": {
+            "enum": [
+              "not-run",
+              "pass",
+              "fail"
+            ]
+          },
+          "level": {
+            "enum": [
+              "contract",
+              "propagation",
+              "original-path"
+            ]
+          },
+          "candidate_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "artifact": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "result": {
+                  "const": "pass"
+                }
+              },
+              "required": [
+                "result"
+              ]
+            },
+            "then": {
+              "required": [
+                "artifact",
+                "sha256",
+                "candidate_sha256"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "owner",
+          "contract",
+          "reason"
+        ],
+        "properties": {
+          "owner": {
+            "type": "string"
+          },
+          "contract": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "reason",
+          "owner_candidates",
+          "confidence"
+        ],
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "selector_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "owner_candidates": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "confidence": {
+            "enum": [
+              "unknown",
+              "static-routing",
+              "observed-contract",
+              "verified-causal"
+            ]
+          },
+          "contract_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "ledger_proposals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "scope",
+          "implementation",
+          "evidence"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "implementation": {
+            "enum": [
+              "implemented",
+              "partial",
+              "missing",
+              "unreviewed"
+            ]
+          },
+          "evidence": {
+            "type": "array"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

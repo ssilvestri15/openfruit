@@ -1,0 +1,57 @@
+﻿# OPENFRUIT v4.0.28 user configuration example.
+# The live file is %USERPROFILE%\.OPENFRUIT\config.toml.
+
+[paths]
+home = "C:/Users/you/AppData/Local/OPENFRUIT"
+user_state = "C:/Users/you/.OPENFRUIT"
+cache = "C:/Users/you/.OPENFRUIT/cache"
+
+[sdk.ios]
+version = "18"
+path = ""
+
+# Additional selectable SDKs.
+[sdk.ios.18]
+path = "C:/Users/you/AppData/Local/OPENFRUIT/sdk/ios/18/iPhoneOS.sdk"
+
+[sdk.ios.26]
+path = "D:/AppleSDKs/iPhoneOS26.sdk"
+
+[sdk.macos]
+path = ""
+
+[sdk.xcode]
+# May point to an extracted developer-owned Xcode.app. OPENFRUIT registers the
+# source and imports the platform SDKs it needs into its managed SDK layout.
+path = "D:/Apple/Xcode.app"
+
+[toolchains]
+# Leave empty to use OPENFRUIT-managed/discovered installations.
+swift = ""
+llvm = ""
+
+[tools]
+git = ""
+zsign = ""
+pymobiledevice3 = ""
+darling = ""
+
+[secrets]
+file = "C:/Users/you/.OPENFRUIT/credentials/secrets.json"
+credentials_dir = "C:/Users/you/.OPENFRUIT/credentials"
+certificates_dir = "C:/Users/you/.OPENFRUIT/certificates"
+
+[signing]
+p12 = "C:/Users/you/.OPENFRUIT/certificates/developer.p12"
+provisioning_profile = "C:/Users/you/.OPENFRUIT/certificates/developer.mobileprovision"
+password_dpapi = "C:/Users/you/.OPENFRUIT/credentials/signing.password.dpapi"
+
+[build]
+default_bundle_id = "dev.OPENFRUIT.app"
+default_jobs = 0
+
+[wsl]
+distro = "Ubuntu"
+
+[bootstrap]
+auto_install = true

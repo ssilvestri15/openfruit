@@ -1,0 +1,51 @@
+{
+  "originHash" : "2a3d66df9ddafd37e5c7d1b6b9bb6015cdce896fbca2b1e34efde50782c62b0b",
+  "pins" : [
+    {
+      "identity" : "statefulmacro",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/LePips/StatefulMacro",
+      "state" : {
+        "revision" : "12d7ee449891457e8cc73074ac7aeba4b50f48ca",
+        "version" : "0.1.7"
+      }
+    },
+    {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser",
+      "state" : {
+        "revision" : "6a52f3251125d74daf04fcbd5e6f08a75d074382",
+        "version" : "1.8.2"
+      }
+    },
+    {
+      "identity" : "swift-case-paths",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-case-paths.git",
+      "state" : {
+        "revision" : "5ce3b8e89d6b05e5a369c356152303a10a7608a3",
+        "version" : "1.9.0"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax.git",
+      "state" : {
+        "revision" : "0687f71944021d616d34d922343dcef086855920",
+        "version" : "600.0.1"
+      }
+    },
+    {
+      "identity" : "xctest-dynamic-overlay",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
+      "state" : {
+        "revision" : "8f6abcf4c8950e2679d5b2fee4ca284fd7c34886",
+        "version" : "1.11.0"
+      }
+    }
+  ],
+  "version" : 3
+}

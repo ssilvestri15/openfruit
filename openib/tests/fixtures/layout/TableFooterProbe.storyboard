@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="Prb-Ftr-Vc1">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <scene sceneID="Prb-Ftr-Sc1">
+            <objects>
+                <tableViewController id="Prb-Ftr-Vc1" sceneMemberID="viewController">
+                    <tableView key="view" dataMode="static" style="insetGrouped" rowHeight="44" sectionHeaderHeight="18" sectionFooterHeight="18" id="Prb-Ftr-Tb1">
+                        <rect key="frame" x="0" y="0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <label key="tableFooterView" opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Footer" textAlignment="center" id="Prb-Ftr-Lb1">
+                            <rect key="frame" x="0" y="500" width="375" height="44"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        </label>
+                        <sections/>
+                    </tableView>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Prb-Ftr-Fr1" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
+        <scene sceneID="Prb-Ftr-Sc2">
+            <objects>
+                <tableViewController id="Prb-Ftr-Vc2" sceneMemberID="viewController">
+                    <tableView key="view" dataMode="static" style="grouped" rowHeight="44" sectionHeaderHeight="18" sectionFooterHeight="18" id="Prb-Ftr-Tb2">
+                        <rect key="frame" x="0" y="0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <label key="tableFooterView" opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Footer" textAlignment="center" id="Prb-Ftr-Lb2">
+                            <rect key="frame" x="0" y="2000" width="375" height="44"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        </label>
+                        <sections/>
+                    </tableView>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Prb-Ftr-Fr2" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
+        <scene sceneID="Prb-Ftr-Sc3">
+            <objects>
+                <tableViewController id="Prb-Ftr-Vc3" sceneMemberID="viewController">
+                    <tableView key="view" dataMode="static" style="plain" rowHeight="44" sectionHeaderHeight="18" sectionFooterHeight="18" id="Prb-Ftr-Tb3">
+                        <rect key="frame" x="0" y="0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <label key="tableFooterView" opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Footer" textAlignment="center" id="Prb-Ftr-Lb3">
+                            <rect key="frame" x="0" y="500" width="375" height="44"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        </label>
+                        <sections/>
+                    </tableView>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Prb-Ftr-Fr3" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
+    </scenes>
+</document>

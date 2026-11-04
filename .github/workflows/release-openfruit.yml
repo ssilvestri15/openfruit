@@ -1,0 +1,135 @@
+name: Release OpenFruit
+
+on:
+  # Releases are cut only from version tags (or manually), never from branch
+  # pushes: X.Y.Z publishes a release, X.Y.Z-dev a prerelease.
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-dev'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag: X.Y.Z, or X.Y.Z-dev for a prerelease (e.g. 0.1.0-dev)'
+        required: true
+
+jobs:
+  release:
+    name: Build & Release OpenFruit (Windows x64)
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve release version
+        id: release
+        shell: pwsh
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag_name }}
+        run: |
+          $Tag = if ($env:GITHUB_REF -like "refs/tags/*") { $env:GITHUB_REF.Substring(10) } else { $env:INPUT_TAG }
+          if ($Tag -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(-dev)?$') {
+            throw "Release tag '$Tag' must be X.Y.Z or X.Y.Z-dev (for example 0.1.0 or 0.1.0-dev)."
+          }
+          $Prerelease = if ($Tag.EndsWith('-dev')) { 'true' } else { 'false' }
+          $Latest = if ($Prerelease -eq 'true') { 'false' } else { 'true' }
+          "tag=$Tag" >> $env:GITHUB_OUTPUT
+          "prerelease=$Prerelease" >> $env:GITHUB_OUTPUT
+          "make_latest=$Latest" >> $env:GITHUB_OUTPUT
+          Write-Host "Release $Tag (prerelease: $Prerelease)"
+
+      - name: Setup LLVM & Clang
+        uses: KyleMayes/install-llvm-action@v2
+        with:
+          version: "20.1.8"
+
+      - name: Verify Clang Compiler
+        run: |
+          clang --version
+          clang-cl /?
+
+      - name: Build OpenFruit & Run Tests
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\openfruit\windows\build.ps1 -Jobs 22 -WithTests -Version "${{ steps.release.outputs.tag }}"
+
+      - name: Verify Binaries
+        run: |
+          $OpenFruitExe = Join-Path $env:LOCALAPPDATA "OpenFruit\bin\openfruit.exe"
+          $OpenIbExe = Join-Path $env:LOCALAPPDATA "OpenFruit\bin\openib.exe"
+          if (-not (Test-Path $OpenFruitExe)) { throw "openfruit.exe missing!" }
+          if (-not (Test-Path $OpenIbExe)) { throw "openib.exe missing!" }
+          $Reported = (& $OpenFruitExe version | Out-String).Trim()
+          if ($Reported -ne "${{ steps.release.outputs.tag }}") {
+            throw "openfruit.exe reports version '$Reported', expected '${{ steps.release.outputs.tag }}'"
+          }
+          & $OpenFruitExe capabilities
+          & $OpenIbExe --version
+
+      - name: Prepare Release Artifacts
+        run: |
+          New-Item -ItemType Directory -Force -Path release-dist, release-dist\licenses | Out-Null
+          $Managed = Join-Path $env:LOCALAPPDATA "OpenFruit"
+          # unicorn.dll is a load-time dependency of openfruit.exe and the macro host.
+          foreach ($Binary in @("openfruit.exe", "openib.exe", "unicorn.dll", "openfruit-macro-host.exe", "genstrings.exe")) {
+            $Source = Join-Path $Managed "bin\$Binary"
+            if (-not (Test-Path $Source)) { throw "$Binary missing from the installation!" }
+            Copy-Item -Path $Source -Destination "release-dist\$Binary" -Force
+          }
+          foreach ($Document in @("README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "CHARITY.md")) {
+            Copy-Item -Path $Document -Destination "release-dist\" -Force
+          }
+          # License texts of the third-party components compiled into the binaries.
+          Copy-Item -Path (Join-Path $Managed "share\licenses\openfruit\*") -Destination "release-dist\licenses\" -Force
+          Copy-Item -Path "openfruit\windows\vendor\libplist\COPYING" -Destination "release-dist\licenses\libplist-COPYING" -Force
+          Compress-Archive -Path "release-dist\*" -DestinationPath "openfruit-windows-x64.zip" -Force
+
+          # GPL-2.0 section 3: the corresponding source of the GPL components
+          # built into the binaries ships with the release (OPENFRUIT's own
+          # source is the tagged repository and its source archive).
+          $Deps = "build\OPENFRUIT-native\release\_deps"
+          New-Item -ItemType Directory -Force -Path gpl-sources | Out-Null
+          Copy-Item -Recurse -Path "$Deps\openfruit_unicorn-src" -Destination "gpl-sources\unicorn-2.1.4" -Force
+          Copy-Item -Recurse -Path "$Deps\openfruit_apfs_reference-src" -Destination "gpl-sources\apfs-fuse-66b86bd" -Force
+          Copy-Item -Recurse -Path "openfruit\windows\vendor\libplist" -Destination "gpl-sources\libplist" -Force
+          Compress-Archive -Path "gpl-sources\*" -DestinationPath "openfruit-third-party-sources.zip" -Force
+
+          # Compute SHA-256 checksums
+          $Sums = foreach ($File in @(Get-ChildItem "release-dist" -File) + @(Get-Item "openfruit-windows-x64.zip", "openfruit-third-party-sources.zip")) {
+            "$((Get-FileHash -Algorithm SHA256 $File.FullName).Hash.ToLower())  $($File.Name)"
+          }
+          $Sums | Out-File -FilePath "SHA256SUMS.txt" -Encoding utf8
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release.outputs.tag }}
+          # A manual run creates the tag on the commit it built.
+          target_commitish: ${{ github.sha }}
+          name: "OpenFruit ${{ steps.release.outputs.tag }}"
+          draft: false
+          prerelease: ${{ steps.release.outputs.prerelease == 'true' }}
+          # A prerelease never becomes "latest", which `openfruit` downloads from.
+          make_latest: ${{ steps.release.outputs.make_latest }}
+          files: |
+            release-dist/openfruit.exe
+            release-dist/openib.exe
+            openfruit-windows-x64.zip
+            openfruit-third-party-sources.zip
+            SHA256SUMS.txt
+          body: |
+            ### OpenFruit ${{ steps.release.outputs.tag }}
+
+            Windows-native iOS toolchain and build suite.
+
+            #### Included Binaries
+            - `openfruit.exe`: Main OpenFruit command line interface and build orchestrator.
+            - `openib.exe`: OpenFruit native Interface Builder / Storyboard / XIB compiler.
+            - `openfruit-windows-x64.zip`: Standalone zip archive containing all binaries, `unicorn.dll`, the license and the third-party license texts.
+            - `openfruit-third-party-sources.zip`: Corresponding source of the GPL/LGPL components built into the binaries (Unicorn, apfs-fuse, libplist).
+
+            OpenFruit is licensed under GPL-2.0-or-later; distributed binaries include Unicorn (GPL-2.0). See `LICENSE` and `THIRD_PARTY_NOTICES.md`. A non-binding request for charitable donations is described in `CHARITY.md`.

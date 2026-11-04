@@ -1,0 +1,879 @@
+diff --git a/Sources/AssetKit/AppIcon/AppIconPlist.swift b/Sources/AssetKit/AppIcon/AppIconPlist.swift
+index 9a4f6b2..aa27855 100644
+--- a/Sources/AssetKit/AppIcon/AppIconPlist.swift
++++ b/Sources/AssetKit/AppIcon/AppIconPlist.swift
+@@ -10,6 +10,7 @@ struct IconFile: Sendable, Hashable {
+     var idiom: Idiom
+     var pointSize: Double
+     var scale: Int
++    var appearance: Appearance?
+     var sourceURL: URL
+     var outputName: String
+ }
+@@ -22,20 +23,22 @@ enum AppIconPlistEmitter {
+ 
+         for image in appIcon.contents.images {
+             guard let filename = image.filename, !filename.isEmpty else {
+-                throw XCAssetCompilerError.appIconSizeMissing(asset: appIcon.name, size: image.size)
++                continue
+             }
+             let src = appIcon.directory.appendingPathComponent(filename)
+             guard FileManager.default.fileExists(atPath: src.path) else {
+                 throw XCAssetCompilerError.missingReferencedFile(asset: appIcon.name, filename: filename)
+             }
+-            guard let (w, _) = image.pointSize, let scale = image.scale?.factor else {
+-                throw XCAssetCompilerError.appIconSizeMissing(asset: appIcon.name, size: image.size)
++            guard let (w, _) = image.pointSize else {
++                continue
+             }
++            let scale = image.scale?.factor ?? 1
+             let bundleName = "\(appIcon.name)\(formatSize(w))x\(formatSize(w))"
+             let entry = IconFile(
+                 idiom: image.idiom,
+                 pointSize: w,
+                 scale: scale,
++                appearance: image.appearances?.first,
+                 sourceURL: src,
+                 outputName: bundleName
+             )
+@@ -45,6 +48,9 @@ enum AppIconPlistEmitter {
+                 if !iphoneFiles.contains(bundleName) { iphoneFiles.append(bundleName) }
+             case .ipad:
+                 if !ipadFiles.contains(bundleName) { ipadFiles.append(bundleName) }
++            case .universal:
++                if !iphoneFiles.contains(bundleName) { iphoneFiles.append(bundleName) }
++                if !ipadFiles.contains(bundleName) { ipadFiles.append(bundleName) }
+             default:
+                 break
+             }
+diff --git a/Sources/AssetKit/CAR/BitmapKeys.swift b/Sources/AssetKit/CAR/BitmapKeys.swift
+index d3e31b4..6d0ac3d 100644
+--- a/Sources/AssetKit/CAR/BitmapKeys.swift
++++ b/Sources/AssetKit/CAR/BitmapKeys.swift
+@@ -39,8 +39,7 @@ enum BitmapKeys {
+         /// the current value is verified end-to-end on device.
+         private var assetKindMarker: UInt32 {
+             switch kind {
+-            case .image: return 0x04
+-            case .vector, .appIcon: return 0x0e
++            case .image, .vector, .appIcon: return 0x0e
+             }
+         }
+ 
+@@ -48,8 +47,10 @@ enum BitmapKeys {
+             var w = ByteWriter()
+             w.writeLE(UInt32(1))
+             w.writeLE(UInt32(0))
+-            w.writeLE(UInt32(0x28))
+-            w.writeLE(UInt32(9))
++            // Four bytes of prefix plus ten UInt32 KEYFORMAT slots.
++            // These fields must track the ten-entry CoreUI 970 key format.
++            w.writeLE(UInt32(0x2C))
++            w.writeLE(UInt32(10))
+             w.writeLE(UInt32(0xFFFFFFFF))
+             w.writeLE(UInt32(1))
+             w.writeLE(assetKindMarker)
+@@ -138,8 +139,11 @@ enum BitmapKeys {
+             }
+         }
+         for rendition in renditions {
+-            if case .preservedSource(let body) = rendition.body, case .svg = body.format {
+-                return .vector
++            if case .preservedSource(let body) = rendition.body {
++                switch body.format {
++                case .svg, .pdf: return .vector
++                case .jpeg: break
++                }
+             }
+         }
+         return .image
+diff --git a/Sources/AssetKit/CAR/CARWriter.swift b/Sources/AssetKit/CAR/CARWriter.swift
+index 4288e0e..e0c03e7 100644
+--- a/Sources/AssetKit/CAR/CARWriter.swift
++++ b/Sources/AssetKit/CAR/CARWriter.swift
+@@ -87,7 +87,7 @@ struct CARWriter: Sendable {
+             // way PNGs do.
+             let scaleFactor: UInt32 = {
+                 switch body.format {
+-                case .svg: return 0
++                case .svg, .pdf: return 0
+                 case .jpeg: return UInt32(rendition.scale?.factor ?? 1) * 100
+                 }
+             }()
+diff --git a/Sources/AssetKit/CAR/CSIHeader.swift b/Sources/AssetKit/CAR/CSIHeader.swift
+index ad38c74..2308860 100644
+--- a/Sources/AssetKit/CAR/CSIHeader.swift
++++ b/Sources/AssetKit/CAR/CSIHeader.swift
+@@ -15,6 +15,10 @@ enum CSIHeader {
+     /// bytes B,G,R,A. The pixel encoding is in BGRA byte order in memory.
+     static let pixelFormatARGB: UInt32 = 0x41524742
+ 
++    /// `pixelFormat` = 'GA8 ' (trailing space) as an LE multi-char constant.
++    /// CoreUI uses this gray-plus-alpha format for template image renditions.
++    static let pixelFormatGA8: UInt32 = 0x47413820
++
+     /// `pixelFormat` = 'JPEG' as an LE multi-char constant. Produces file
+     /// bytes G,E,P,J. Reused for preserved-source JPG renditions; CoreUI
+     /// dispatches on this constant to invoke its JPEG decoder on the
+@@ -27,6 +31,10 @@ enum CSIHeader {
+     /// renderer on the DWAR-wrapped body.
+     static let pixelFormatSVG: UInt32 = 0x53564720
+ 
++    /// `pixelFormat` = 'PDF ' (trailing space) as an LE multi-char constant.
++    /// Produces file bytes space,F,D,P, matching preserved PDF renditions.
++    static let pixelFormatPDF: UInt32 = 0x50444620
++
+     /// Layout types observed in the reference. The names are derived from
+     /// CoreUI symbol names where known.
+     enum Layout: UInt16 {
+diff --git a/Sources/AssetKit/CAR/CSIWriter.swift b/Sources/AssetKit/CAR/CSIWriter.swift
+index 2bdeace..f7f926f 100644
+--- a/Sources/AssetKit/CAR/CSIWriter.swift
++++ b/Sources/AssetKit/CAR/CSIWriter.swift
+@@ -9,39 +9,82 @@ import Foundation
+ /// COLR block for color).
+ enum CSIWriter {
+     static func bitmap(name: String, body: BitmapBody, scaleFactor: UInt32) -> Data {
++        let bytesPerPixel: UInt32 = body.isTemplate ? 2 : 4
++        let rowBytes = (body.width * bytesPerPixel + 15) & ~15
+         let tvl = CSITVL.encode([
+             .bitmapDescriptor(width: body.width, height: body.height),
+             .destRect(width: body.width, height: body.height),
+             .sliceScale,
+             .bitmapFlag,
+-            .bytesPerRow(width: body.width),
++            .bytesPerRow(width: body.width, bytesPerPixel: bytesPerPixel),
+         ])
+-        let payload = MLECBody.encode(width: body.width, height: body.height, pixelsBGRA: body.pixelsBGRA)
+ 
+-        // Bit 4 (0x10): generic-image category; set for `.image`, cleared
+-        // for `.appIcon`. Matches what UIImage(named:) walks for imageset
+-        // resolution.
+-        //
+-        // Bits 2 and 8 (0x104): set when this bitmap was rasterised from a
+-        // vector source (SVG / PDF). Matches actool's reference output for
+-        // SVG-rasterised bitmaps (flags=0x114 vs flags=0x10 for native PNG).
+-        // Bit 2 (0x04) is also set on the standalone vector source rendition
+-        // emitted from `preservedSource(.svg)`; the pair (0x04, 0x100)
+-        // together appears to mark "rendition is a raster derived from a
+-        // vector source", letting CoreUI's runtime branch into the
+-        // re-rasterise-from-vector path at non-intrinsic sizes.
+-        var renditionFlags: UInt32 = (body.kind == .image) ? 0x10 : 0x00
++        let unpaddedRowBytes = Int(body.width * bytesPerPixel)
++        let rawPixels: [UInt8]
++        if body.isTemplate {
++            // CoreUI encodes template images as GA8 (grayscale + alpha, 2 bytes per pixel)
++            // with a premultiplied white silhouette (Gray = alpha, Alpha = alpha).
++            // This ensures that transparent pixels have (0, 0) and opaque pixels have (255, 255),
++            // fully matching Apple's actool output.
++            var buf = [UInt8]()
++            buf.reserveCapacity(body.pixelsBGRA.count / 2)
++            for i in stride(from: 0, to: body.pixelsBGRA.count, by: 4) {
++                let a = body.pixelsBGRA[i + 3]
++                buf.append(a)
++                buf.append(a)
++            }
++            rawPixels = buf
++        } else {
++            rawPixels = body.pixelsBGRA
++        }
++
++        let paddedPixels: [UInt8]
++        let pad = Int(rowBytes) - unpaddedRowBytes
++        if pad == 0 {
++            paddedPixels = rawPixels
++        } else {
++            var buf = [UInt8]()
++            buf.reserveCapacity(Int(rowBytes * body.height))
++            for y in 0..<Int(body.height) {
++                let start = y * unpaddedRowBytes
++                let end = start + unpaddedRowBytes
++                buf.append(contentsOf: rawPixels[start..<end])
++                buf.append(contentsOf: repeatElement(0, count: pad))
++            }
++            paddedPixels = buf
++        }
++
++        let payload = MLECBody.encode(
++            width: body.width,
++            height: body.height,
++            rowBytes: rowBytes,
++            isOpaque: body.isOpaque,
++            pixels: paddedPixels
++        )
++
++        var renditionFlags: UInt32
++        if body.isTemplate {
++            // CoreUI 970 uses bit 3 (0x08) for imagesets whose rendering intent is
++            // template. Bit 4 (0x10) must be cleared so UIKit treats the rendition
++            // strictly as an alpha mask template.
++            renditionFlags = 0x08
++        } else {
++            renditionFlags = (body.kind == .image) ? 0x10 : 0x00
++        }
+         if body.derivedFromVector {
+-            renditionFlags |= 0x104
++            renditionFlags |= body.isTemplate ? 0x04 : 0x104
+         }
+ 
++        let pixelFormat = body.isTemplate ? CSIHeader.pixelFormatGA8 : CSIHeader.pixelFormatARGB
++        let colorSpace: UInt32 = body.isTemplate ? 2 : UInt32(body.colorSpaceID)
++
+         let header = CSIHeader.encode(
+             renditionFlags: renditionFlags,
+             width: body.width,
+             height: body.height,
+             scaleFactor: scaleFactor,
+-            pixelFormat: CSIHeader.pixelFormatARGB,
+-            colorSpace: UInt32(body.colorSpaceID),
++            pixelFormat: pixelFormat,
++            colorSpace: colorSpace,
+             layout: .bitmapIcon,
+             name: body.renditionName,
+             tvlLength: UInt32(tvl.count),
+@@ -76,6 +119,12 @@ enum CSIWriter {
+             // meaningful for a scale-free vector source.
+             tvl = CSITVL.encode([.sliceScale, .bitmapFlag])
+             envelope = DWAREnvelope.encode(flags: 1, payload: LZFSE.encode([UInt8](body.sourceData)))
++        case .pdf:
++            layout = .vector
++            pixelFormat = CSIHeader.pixelFormatPDF
++            renditionFlags = 0x04
++            tvl = CSITVL.encode([.sliceScale, .bitmapFlag])
++            envelope = DWAREnvelope.encode(flags: 1, payload: LZFSE.encode([UInt8](body.sourceData)))
+         case .jpeg(let width, let height):
+             layout = .bitmapIcon
+             pixelFormat = CSIHeader.pixelFormatJPEG
+@@ -113,27 +162,28 @@ enum CSIWriter {
+     }
+ 
+     static func color(name: String, body: ColorBody) -> Data {
++        let tvl = CSITVL.encode([.namedColorScale, .bitmapFlag])
+         let payload = colorBody(body: body)
+         let header = CSIHeader.encode(
+             renditionFlags: 0,
+             width: 0,
+             height: 0,
+-            scaleFactor: 100,
++            scaleFactor: 0,
+             pixelFormat: 0,
+-            colorSpace: UInt32(body.colorSpaceID),
++            colorSpace: 0,
+             layout: .namedColor,
+             name: name,
+-            tvlLength: 0,
+-            bitmapCount: 0,
++            tvlLength: UInt32(tvl.count),
++            bitmapCount: 1,
+             renditionLength: UInt32(payload.count)
+         )
+-        return header + payload
++        return header + tvl + payload
+     }
+ 
+     private static func colorBody(body: ColorBody) -> Data {
+         var w = ByteWriter()
+-        w.writeFourCC("COLR")
+-        w.writeLE(UInt32(0))                    // version
++        w.writeFourCC("RLOC")
++        w.writeLE(UInt32(1))                    // version
+         w.writeLE(UInt32(body.colorSpaceID))    // colorSpaceID with flag bits
+         w.writeLE(UInt32(4))                    // numberOfComponents
+         for component in [body.red, body.green, body.blue, body.alpha] {
+diff --git a/Sources/AssetKit/CAR/FacetKeys.swift b/Sources/AssetKit/CAR/FacetKeys.swift
+index 2a20b56..4839792 100644
+--- a/Sources/AssetKit/CAR/FacetKeys.swift
++++ b/Sources/AssetKit/CAR/FacetKeys.swift
+@@ -44,6 +44,8 @@ enum FacetKeys {
+                 ]
+             case .color:
+                 return [
++                    (UInt16(AttributeID.element.rawValue), RenditionKey.Element.bitmap.rawValue),
++                    (UInt16(AttributeID.part.rawValue), RenditionKey.Part.namedColor.rawValue),
+                     (UInt16(AttributeID.identifier.rawValue), identifier),
+                 ]
+             }
+diff --git a/Sources/AssetKit/CAR/KeyFormat.swift b/Sources/AssetKit/CAR/KeyFormat.swift
+index 292ce33..d14d7ba 100644
+--- a/Sources/AssetKit/CAR/KeyFormat.swift
++++ b/Sources/AssetKit/CAR/KeyFormat.swift
+@@ -9,12 +9,14 @@ enum AttributeID: UInt32 {
+     case element = 1
+     case part = 2
+     case appearance = 7
++    case dimension1 = 8
+     case dimension2 = 9
+     case scale = 12
+     case localization = 13
+     case idiom = 15
+     case subtype = 16
+     case identifier = 17
++    case displayGamut = 24
+ }
+ 
+ /// Attribute order CoreUI 970 emits in `KEYFORMAT` (and which the rendition key
+@@ -27,7 +29,8 @@ let v1KeyFormat: [AttributeID] = [
+     .scale,
+     .idiom,
+     .subtype,
+-    .dimension2,
++    .dimension1,
++    .displayGamut,
+     .identifier,
+     .element,
+     .part,
+diff --git a/Sources/AssetKit/CAR/MLECBody.swift b/Sources/AssetKit/CAR/MLECBody.swift
+index 8164c57..27fce38 100644
+--- a/Sources/AssetKit/CAR/MLECBody.swift
++++ b/Sources/AssetKit/CAR/MLECBody.swift
+@@ -23,24 +23,26 @@ import Foundation
+ /// single chunk covering the whole image. The 3-chunk split is mimicry
+ /// rather than a correctness requirement: CoreUI accepts both layouts.
+ enum MLECBody {
+-    static func encode(width: UInt32, height: UInt32, pixelsBGRA: [UInt8]) -> Data {
+-        let bytesPerRow = Int(width) * 4
++    static func encode(width: UInt32, height: UInt32, rowBytes: UInt32, isOpaque: Bool, pixels: [UInt8]) -> Data {
++        precondition(rowBytes > 0)
++        let rowStride = Int(rowBytes)
++        precondition(pixels.count == rowStride * Int(height))
+         let canChunkInThree = height % 3 == 0
+         let chunkCount: UInt32 = canChunkInThree ? 3 : 1
+         let rowsPerChunk = height / chunkCount
+ 
+         var chunks: [(rows: UInt32, payload: [UInt8])] = []
+         for i in 0..<Int(chunkCount) {
+-            let start = i * Int(rowsPerChunk) * bytesPerRow
+-            let end = start + Int(rowsPerChunk) * bytesPerRow
+-            let slice = Array(pixelsBGRA[start..<end])
++            let start = i * Int(rowsPerChunk) * rowStride
++            let end = start + Int(rowsPerChunk) * rowStride
++            let slice = Array(pixels[start..<end])
+             chunks.append((rows: rowsPerChunk, payload: LZFSE.encode(slice)))
+         }
+ 
+         var w = ByteWriter()
+         w.writeFourCC("MLEC")
+-        w.writeLE(UInt32(3))                    // compressionType = 3 (LZFSE)
+-        w.writeLE(UInt32(4))                    // bytesPerPixel (BGRA8 = 4)
++        w.writeLE(isOpaque ? UInt32(3) : UInt32(1)) // 3 = opaque, 1 = transparent / alpha
++        w.writeLE(UInt32(4))                        // kRenditionCompressionType_lzfse
+         w.writeLE(chunkCount)
+ 
+         for chunk in chunks {
+diff --git a/Sources/AssetKit/CAR/RenditionKey.swift b/Sources/AssetKit/CAR/RenditionKey.swift
+index 01dfb76..fd5fbde 100644
+--- a/Sources/AssetKit/CAR/RenditionKey.swift
++++ b/Sources/AssetKit/CAR/RenditionKey.swift
+@@ -1,18 +1,19 @@
+ import Foundation
+ 
+-/// Packed rendition key matching `v1KeyFormat` (CoreUI 970, 9 attributes).
++/// Packed rendition key matching `v1KeyFormat` (CoreUI 970, 10 attributes).
+ ///
+ /// Encoded as a sequence of little-endian `UInt16` tokens, one per attribute,
+ /// in the order declared by `KEYFORMAT`. The pair `(attributeID, attributeValue)`
+ /// is implicit: the position in the tuple selects which attribute the token
+-/// belongs to. Total size is 18 bytes (9 × u16).
++/// belongs to. Total size is 20 bytes (10 × u16).
+ struct RenditionKey: Hashable, Sendable {
+     var appearance: UInt16
+     var localization: UInt16
+     var scale: UInt16
+     var idiom: UInt16
+     var subtype: UInt16
+-    var dimension2: UInt16
++    var dimension1: UInt16
++    var displayGamut: UInt16
+     var identifier: UInt16
+     var element: UInt16
+     var part: UInt16
+@@ -36,14 +37,17 @@ struct RenditionKey: Hashable, Sendable {
+         /// rather than `image`; bitmap variants rasterised from the SVG
+         /// (which `UIImage(named:)` actually returns) live under `image`.
+         case vectorSource = 42
++        /// Used by UIColor(named:) for named color renditions.
++        case namedColor = 217
+     }
+ 
+     init(rendition: Rendition) {
+         self.appearance = (rendition.appearance?.darkLuminosity == true) ? 1 : 0
+         self.localization = 0
+-        self.scale = rendition.scale?.rawValueByte ?? 0
++        self.scale = rendition.scale?.rawValueByte ?? 1
+         self.idiom = rendition.idiom.rawValueByte
+         self.subtype = 0
++        self.displayGamut = rendition.gamut?.rawValueByte ?? 0
+         self.identifier = UInt16(FacetKeys.nameHash(rendition.name) & 0xFFFF)
+         switch rendition.body {
+         case .bitmap(let body):
+@@ -51,24 +55,24 @@ struct RenditionKey: Hashable, Sendable {
+             switch body.kind {
+             case .appIcon:
+                 self.part = Part.appIcon.rawValue
+-                // Dimension2 is the appicon "Icon Index" slot. v1 only
++                // Dimension1 is the appicon "Icon Index" slot. v1 only
+                 // emits one logical icon size per appiconset, so this is
+                 // always 1.
+-                self.dimension2 = 1
++                self.dimension1 = 1
+             case .image:
+                 self.part = Part.image.rawValue
+-                // Generic image assets don't use Dimension2 at all.
+-                self.dimension2 = 0
++                // Generic image assets don't use Dimension1 at all.
++                self.dimension1 = 0
+             }
+         case .color:
+-            self.element = 0
+-            self.part = 0
+-            self.dimension2 = 0
++            self.element = Element.bitmap.rawValue
++            self.part = Part.namedColor.rawValue
++            self.dimension1 = 0
+         case .preservedSource(let body):
+             self.element = Element.bitmap.rawValue
+-            self.dimension2 = 0
++            self.dimension1 = 0
+             switch body.format {
+-            case .svg:
++            case .svg, .pdf:
+                 // SVG source renditions occupy the dedicated vector-source
+                 // part; bitmap variants rasterised from the SVG (when the
+                 // compiler emits them) would use Part.image instead.
+@@ -88,7 +92,8 @@ struct RenditionKey: Hashable, Sendable {
+         scale: UInt16 = 0,
+         idiom: UInt16 = 0,
+         subtype: UInt16 = 0,
+-        dimension2: UInt16 = 0,
++        dimension1: UInt16 = 0,
++        displayGamut: UInt16 = 0,
+         identifier: UInt16 = 0,
+         element: UInt16 = 0,
+         part: UInt16 = 0
+@@ -98,7 +103,8 @@ struct RenditionKey: Hashable, Sendable {
+         self.scale = scale
+         self.idiom = idiom
+         self.subtype = subtype
+-        self.dimension2 = dimension2
++        self.dimension1 = dimension1
++        self.displayGamut = displayGamut
+         self.identifier = identifier
+         self.element = element
+         self.part = part
+@@ -111,7 +117,8 @@ struct RenditionKey: Hashable, Sendable {
+         w.writeLE(scale)
+         w.writeLE(idiom)
+         w.writeLE(subtype)
+-        w.writeLE(dimension2)
++        w.writeLE(dimension1)
++        w.writeLE(displayGamut)
+         w.writeLE(identifier)
+         w.writeLE(element)
+         w.writeLE(part)
+@@ -119,7 +126,7 @@ struct RenditionKey: Hashable, Sendable {
+     }
+ 
+     static func decode(_ data: Data) -> RenditionKey? {
+-        guard data.count == 18 else { return nil }
++        guard data.count == 20 else { return nil }
+         func u16(_ offset: Int) -> UInt16 {
+             let lo = UInt16(data[data.index(data.startIndex, offsetBy: offset)])
+             let hi = UInt16(data[data.index(data.startIndex, offsetBy: offset + 1)])
+@@ -131,10 +138,11 @@ struct RenditionKey: Hashable, Sendable {
+             scale: u16(4),
+             idiom: u16(6),
+             subtype: u16(8),
+-            dimension2: u16(10),
+-            identifier: u16(12),
+-            element: u16(14),
+-            part: u16(16)
++            dimension1: u16(10),
++            displayGamut: u16(12),
++            identifier: u16(14),
++            element: u16(16),
++            part: u16(18)
+         )
+     }
+ }
+diff --git a/Sources/AssetKit/CAR/TVLEntry.swift b/Sources/AssetKit/CAR/TVLEntry.swift
+index f2ddb68..5c6876c 100644
+--- a/Sources/AssetKit/CAR/TVLEntry.swift
++++ b/Sources/AssetKit/CAR/TVLEntry.swift
+@@ -26,6 +26,10 @@ enum TVLEntry {
+     /// Type 1004 (8-byte value): slice/scale pair. Reference is `(0, 1.0f)`.
+     case sliceScale
+ 
++    /// Type 1004 (8-byte value): named colors use two zero words rather
++    /// than the bitmap/vector scale pair.
++    case namedColorScale
++
+     /// Type 1006 (4-byte value): always 1 in the reference. Likely a
+     /// bitmap-count / has-mipmap-stages flag.
+     case bitmapFlag
+@@ -33,7 +37,7 @@ enum TVLEntry {
+     /// Type 1007 (4-byte value): bytes per row, aligned up to 16. Caller
+     /// passes the pixel width; encoding computes `width * 4` then rounds up
+     /// to a 16-byte stride.
+-    case bytesPerRow(width: UInt32)
++    case bytesPerRow(width: UInt32, bytesPerPixel: UInt32 = 4)
+ 
+     func encode(into w: inout ByteWriter) {
+         switch self {
+@@ -60,14 +64,19 @@ enum TVLEntry {
+             w.writeLE(UInt32(8))
+             w.writeLE(UInt32(0))
+             w.writeLE(UInt32(Float(1).bitPattern))
++        case .namedColorScale:
++            w.writeLE(UInt32(1004))
++            w.writeLE(UInt32(8))
++            w.writeLE(UInt32(0))
++            w.writeLE(UInt32(0))
+         case .bitmapFlag:
+             w.writeLE(UInt32(1006))
+             w.writeLE(UInt32(4))
+             w.writeLE(UInt32(1))
+-        case .bytesPerRow(let width):
++        case .bytesPerRow(let width, let bytesPerPixel):
+             w.writeLE(UInt32(1007))
+             w.writeLE(UInt32(4))
+-            let bytesPerRow = width * 4
++            let bytesPerRow = width * bytesPerPixel
+             let aligned = (bytesPerRow + 15) & ~15
+             w.writeLE(aligned)
+         }
+diff --git a/Sources/AssetKit/Rendition/ColorRenderer.swift b/Sources/AssetKit/Rendition/ColorRenderer.swift
+index 0bd50ba..667eda4 100644
+--- a/Sources/AssetKit/Rendition/ColorRenderer.swift
++++ b/Sources/AssetKit/Rendition/ColorRenderer.swift
+@@ -4,10 +4,11 @@ enum ColorRenderer {
+     static func renditions(for set: LoadedColorSet) throws -> [Rendition] {
+         var out: [Rendition] = []
+         for entry in set.contents.colors {
+-            let (r, g, b, a) = try entry.color.components.asDoubles()
++            guard let color = entry.color else { continue }
++            let (r, g, b, a) = try color.components.asDoubles()
+             let gamut: Gamut = {
+                 if let declared = entry.displayGamut { return declared }
+-                switch entry.color.colorSpace {
++                switch color.colorSpace {
+                 case "display-p3": return .displayP3
+                 default: return .sRGB
+                 }
+diff --git a/Sources/AssetKit/Rendition/ImageRenderer.swift b/Sources/AssetKit/Rendition/ImageRenderer.swift
+index 05e6107..d20ff66 100644
+--- a/Sources/AssetKit/Rendition/ImageRenderer.swift
++++ b/Sources/AssetKit/Rendition/ImageRenderer.swift
+@@ -23,22 +23,28 @@ enum ImageRenderer {
+             let appearance = image.appearances?.first { $0.darkLuminosity }
+             switch format {
+             case .png:
+-                let ctx = PNGSource.Context(
+-                    assetName: set.name,
+-                    idiom: image.idiom,
+-                    scale: image.scale,
+-                    appearance: appearance,
+-                    gamut: image.displayGamut ?? .sRGB,
+-                    filename: filename,
+-                    kind: .image
+-                )
+-                out.append(contentsOf: try PNGSource.renditions(bytes: bytes, context: ctx))
++                let scales: [Scale] = image.scale.map { [$0] } ?? [.x1, .x2, .x3]
++                for scale in scales {
++                    let ctx = PNGSource.Context(
++                        assetName: set.name,
++                        idiom: image.idiom,
++                        scale: scale,
++                        appearance: appearance,
++                        gamut: image.displayGamut ?? .sRGB,
++                        filename: filename,
++                        kind: .image,
++                        isTemplate: set.contents.properties?.isTemplate == true
++                    )
++                    out.append(contentsOf: try PNGSource.renditions(bytes: bytes, context: ctx))
++                }
+             case .svg:
+                 let ctx = SVGSource.Context(
+                     assetName: set.name,
+                     idiom: image.idiom,
+                     appearance: appearance,
+-                    filename: filename
++                    filename: filename,
++                    preservesVectorRepresentation: set.contents.properties?.preservesVector == true,
++                    isTemplate: set.contents.properties?.isTemplate == true
+                 )
+                 out.append(contentsOf: try SVGSource.renditions(
+                     bytes: bytes,
+@@ -46,14 +52,25 @@ enum ImageRenderer {
+                     rasteriser: svgRasterizer
+                 ))
+             case .jpeg:
+-                let ctx = JPEGSource.Context(
++                let scales: [Scale] = image.scale.map { [$0] } ?? [.x1, .x2, .x3]
++                for scale in scales {
++                    let ctx = JPEGSource.Context(
++                        assetName: set.name,
++                        idiom: image.idiom,
++                        scale: scale,
++                        appearance: appearance,
++                        filename: filename
++                    )
++                    out.append(contentsOf: try JPEGSource.renditions(bytes: bytes, context: ctx))
++                }
++            case .pdf:
++                out.append(contentsOf: PDFSource.renditions(
++                    bytes: bytes,
+                     assetName: set.name,
+                     idiom: image.idiom,
+-                    scale: image.scale,
+                     appearance: appearance,
+                     filename: filename
+-                )
+-                out.append(contentsOf: try JPEGSource.renditions(bytes: bytes, context: ctx))
++                ))
+             }
+         }
+         return out
+@@ -84,7 +101,7 @@ enum ImageRenderer {
+                 assetName: appIcon.name,
+                 idiom: file.idiom,
+                 scale: scale,
+-                appearance: nil,
++                appearance: file.appearance,
+                 gamut: .sRGB,
+                 filename: filename,
+                 kind: .appIcon
+diff --git a/Sources/AssetKit/Rendition/PDFSource.swift b/Sources/AssetKit/Rendition/PDFSource.swift
+new file mode 100644
+index 0000000..c051d87
+--- /dev/null
++++ b/Sources/AssetKit/Rendition/PDFSource.swift
+@@ -0,0 +1,26 @@
++import Foundation
++
++/// Preserves a PDF-backed imageset as a CoreUI vector rendition. Xcode uses
++/// the same DWAR/LZFSE envelope and vector key category as preserved SVG.
++enum PDFSource {
++    static func renditions(
++        bytes: Data,
++        assetName: String,
++        idiom: Idiom,
++        appearance: Appearance?,
++        filename: String
++    ) -> [Rendition] {
++        [Rendition(
++            name: assetName,
++            idiom: idiom,
++            scale: .x1,
++            appearance: appearance,
++            gamut: nil,
++            body: .preservedSource(PreservedSourceBody(
++                format: .pdf,
++                sourceData: bytes,
++                renditionName: filename
++            ))
++        )]
++    }
++}
+diff --git a/Sources/AssetKit/Rendition/PNGSource.swift b/Sources/AssetKit/Rendition/PNGSource.swift
+index 6cc04b3..0990b9b 100644
+--- a/Sources/AssetKit/Rendition/PNGSource.swift
++++ b/Sources/AssetKit/Rendition/PNGSource.swift
+@@ -26,6 +26,7 @@ enum PNGSource {
+         var gamut: Gamut
+         var filename: String
+         var kind: BitmapBody.Kind
++        var isTemplate: Bool = false
+     }
+ 
+     static func renditions(bytes: Data, context: Context) throws -> [Rendition] {
+@@ -42,6 +43,7 @@ enum PNGSource {
+                 pixelsBGRA: bgra,
+                 colorSpaceID: context.gamut.colorSpaceID,
+                 kind: context.kind,
++                isTemplate: context.isTemplate,
+                 renditionName: context.filename
+             ))
+         )]
+diff --git a/Sources/AssetKit/Rendition/Rendition.swift b/Sources/AssetKit/Rendition/Rendition.swift
+index 2175002..290c977 100644
+--- a/Sources/AssetKit/Rendition/Rendition.swift
++++ b/Sources/AssetKit/Rendition/Rendition.swift
+@@ -13,6 +13,11 @@ struct Rendition: Sendable {
+     var appearance: Appearance?
+     var gamut: Gamut?
+     var body: Body
++
++    var isColor: Bool {
++        if case .color = body { return true }
++        return false
++    }
+ }
+ 
+ struct BitmapBody: Sendable {
+@@ -34,6 +39,10 @@ struct BitmapBody: Sendable {
+     var pixelsBGRA: [UInt8]
+     var colorSpaceID: UInt8
+     var kind: Kind
++    /// True when the imageset declares template-rendering-intent=template.
++    /// CoreUI records this as rendition flag 0x08 so UIImage loads the
++    /// bitmap as a tintable alpha mask rather than preserving source RGB.
++    var isTemplate: Bool = false
+     /// True iff this bitmap was rasterised from a vector source (SVG, PDF)
+     /// rather than supplied directly as bitmap pixels. The reference actool
+     /// output tags vector-rasterised bitmaps with extra bits in the CSI
+@@ -44,6 +53,20 @@ struct BitmapBody: Sendable {
+     /// The source filename (e.g. "icon@2x.png"). Stored in the CSI header's
+     /// 128-char name field; actool uses the filename here, not the asset name.
+     var renditionName: String
++
++    var isOpaque: Bool {
++        if isTemplate {
++            return false
++        }
++        let count = pixelsBGRA.count
++        guard count >= 4 else { return true }
++        for i in stride(from: 3, to: count, by: 4) {
++            if pixelsBGRA[i] < 255 {
++                return false
++            }
++        }
++        return true
++    }
+ }
+ 
+ struct ColorBody: Sendable {
+@@ -69,6 +92,7 @@ struct PreservedSourceBody: Sendable {
+     enum Format: Sendable {
+         case svg
+         case jpeg(width: UInt32, height: UInt32)
++        case pdf
+     }
+ 
+     var format: Format
+diff --git a/Sources/AssetKit/Rendition/SVGSource.swift b/Sources/AssetKit/Rendition/SVGSource.swift
+index c78901e..cfbaf60 100644
+--- a/Sources/AssetKit/Rendition/SVGSource.swift
++++ b/Sources/AssetKit/Rendition/SVGSource.swift
+@@ -11,6 +11,8 @@ enum SVGSource {
+         var idiom: Idiom
+         var appearance: Appearance?
+         var filename: String
++        var preservesVectorRepresentation: Bool
++        var isTemplate: Bool
+     }
+ 
+     static func renditions(
+@@ -26,21 +28,23 @@ enum SVGSource {
+         //    rasterised bitmap variants below -- but the vector rendition
+         //    is still load-bearing for any consumer that asks CoreUI for
+         //    the underlying vector data, and it's cheap to emit.
+-        out.append(Rendition(
+-            name: context.assetName,
+-            idiom: context.idiom,
+-            // Reference packs the vector source into the scale=1 slot
+-            // regardless of file naming; see ADR 0002 and
+-            // docs/coreui-970-format.md §7.
+-            scale: .x1,
+-            appearance: context.appearance,
+-            gamut: nil,
+-            body: .preservedSource(PreservedSourceBody(
+-                format: .svg,
+-                sourceData: bytes,
+-                renditionName: context.filename
++        if context.preservesVectorRepresentation {
++            out.append(Rendition(
++                name: context.assetName,
++                idiom: context.idiom,
++                // Reference packs the vector source into the scale=1 slot
++                // regardless of file naming; see ADR 0002 and
++                // docs/coreui-970-format.md §7.
++                scale: .x1,
++                appearance: context.appearance,
++                gamut: nil,
++                body: .preservedSource(PreservedSourceBody(
++                    format: .svg,
++                    sourceData: bytes,
++                    renditionName: context.filename
++                ))
+             ))
+-        ))
++        }
+ 
+         // 2. Rasterised bitmap fallbacks at 1x / 2x / 3x. UIImage(named:)
+         //    resolves to these. Pixel dimensions = intrinsic SVG size ×
+@@ -89,6 +93,7 @@ enum SVGSource {
+                     pixelsBGRA: rgba,
+                     colorSpaceID: Gamut.sRGB.colorSpaceID,
+                     kind: .image,
++                    isTemplate: context.isTemplate,
+                     derivedFromVector: true,
+                     // Reference uses the source SVG filename for every
+                     // variant (vector + raster), not a synthetic per-scale
+diff --git a/Sources/AssetKit/Rendition/SourceFormat.swift b/Sources/AssetKit/Rendition/SourceFormat.swift
+index 9962f6d..9284784 100644
+--- a/Sources/AssetKit/Rendition/SourceFormat.swift
++++ b/Sources/AssetKit/Rendition/SourceFormat.swift
+@@ -16,12 +16,14 @@ enum SourceFormat {
+     case png
+     case svg
+     case jpeg
++    case pdf
+ 
+     static func detect(filename: String) -> SourceFormat? {
+         switch (filename as NSString).pathExtension.lowercased() {
+         case "png": return .png
+         case "svg": return .svg
+         case "jpg", "jpeg": return .jpeg
++        case "pdf": return .pdf
+         default: return nil
+         }
+     }
+diff --git a/Sources/AssetKit/Schema/Contents.swift b/Sources/AssetKit/Schema/Contents.swift
+index ac3271c..b2ae7fb 100644
+--- a/Sources/AssetKit/Schema/Contents.swift
++++ b/Sources/AssetKit/Schema/Contents.swift
+@@ -86,6 +86,19 @@ struct CatalogContents: Codable, Sendable {
+ }
+ 
+ struct ImageSetContents: Codable, Sendable {
++    struct Properties: Codable, Sendable {
++        var templateRenderingIntent: String?
++        var preservesVectorRepresentation: Bool?
++
++        enum CodingKeys: String, CodingKey {
++            case templateRenderingIntent = "template-rendering-intent"
++            case preservesVectorRepresentation = "preserves-vector-representation"
++        }
++
++        var isTemplate: Bool { templateRenderingIntent == "template" }
++        var preservesVector: Bool { preservesVectorRepresentation == true }
++    }
++
+     struct Image: Codable, Sendable {
+         var idiom: Idiom
+         var scale: Scale?
+@@ -100,6 +113,7 @@ struct ImageSetContents: Codable, Sendable {
+     }
+     var images: [Image]
+     var info: CatalogContents.Info
++    var properties: Properties?
+ }
+ 
+ struct AppIconContents: Codable, Sendable {
+@@ -107,6 +121,7 @@ struct AppIconContents: Codable, Sendable {
+         var idiom: Idiom
+         var size: String
+         var scale: Scale?
++        var appearances: [Appearance]?
+         var filename: String?
+         var role: String?
+         var subtype: String?
+@@ -128,7 +143,7 @@ struct ColorSetContents: Codable, Sendable {
+         var idiom: Idiom
+         var appearances: [Appearance]?
+         var displayGamut: Gamut?
+-        var color: Color
++        var color: Color?
+ 
+         enum CodingKeys: String, CodingKey {
+             case idiom, appearances, color

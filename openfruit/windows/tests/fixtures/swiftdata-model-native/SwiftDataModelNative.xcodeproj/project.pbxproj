@@ -1,0 +1,121 @@
+// !$*UTF8*$!
+{
+    archiveVersion = 1;
+    classes = {};
+    objectVersion = 77;
+    objects = {
+        F00000000000000000000001 = {
+            isa = PBXProject;
+            buildConfigurationList = F00000000000000000000002;
+            compatibilityVersion = "Xcode 15.0";
+            mainGroup = F00000000000000000000003;
+            productRefGroup = F00000000000000000000004;
+            projectDirPath = "";
+            projectRoot = "";
+            targets = (F00000000000000000000005,);
+        };
+        F00000000000000000000002 = {
+            isa = XCConfigurationList;
+            buildConfigurations = (F00000000000000000000006,);
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
+        F00000000000000000000003 = {
+            isa = PBXGroup;
+            children = (F00000000000000000000007, F00000000000000000000008, F00000000000000000000004,);
+            sourceTree = "<group>";
+        };
+        F00000000000000000000004 = {
+            isa = PBXGroup;
+            children = (F00000000000000000000009,);
+            name = Products;
+            sourceTree = "<group>";
+        };
+        F00000000000000000000005 = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = F0000000000000000000000A;
+            buildPhases = (F0000000000000000000000B, F0000000000000000000000C, F0000000000000000000000D,);
+            buildRules = ();
+            dependencies = ();
+            name = SwiftDataModelNative;
+            productName = SwiftDataModelNative;
+            productReference = F00000000000000000000009;
+            productType = "com.apple.product-type.application";
+        };
+        F00000000000000000000006 = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                SDKROOT = iphoneos;
+                IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+            };
+            name = Release;
+        };
+        F00000000000000000000007 = {
+            isa = PBXFileReference;
+            lastKnownFileType = sourcecode.swift;
+            path = Probe.swift;
+            sourceTree = "<group>";
+        };
+        F00000000000000000000008 = {
+            isa = PBXGroup;
+            children = (F0000000000000000000000E,);
+            name = Frameworks;
+            sourceTree = "<group>";
+        };
+        F00000000000000000000009 = {
+            isa = PBXFileReference;
+            explicitFileType = wrapper.application;
+            includeInIndex = 0;
+            path = SwiftDataModelNative.app;
+            sourceTree = BUILT_PRODUCTS_DIR;
+        };
+        F0000000000000000000000A = {
+            isa = XCConfigurationList;
+            buildConfigurations = (F0000000000000000000000F,);
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
+        F0000000000000000000000B = {
+            isa = PBXSourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (F00000000000000000000010,);
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        F0000000000000000000000C = {
+            isa = PBXFrameworksBuildPhase;
+            buildActionMask = 2147483647;
+            files = (F00000000000000000000011,);
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        F0000000000000000000000D = {
+            isa = PBXResourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = ();
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        F0000000000000000000000E = {
+            isa = PBXFileReference;
+            lastKnownFileType = wrapper.framework;
+            name = SwiftData.framework;
+            path = System/Library/Frameworks/SwiftData.framework;
+            sourceTree = SDKROOT;
+        };
+        F0000000000000000000000F = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGNING_ALLOWED = NO;
+                GENERATE_INFOPLIST_FILE = YES;
+                IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+                PRODUCT_BUNDLE_IDENTIFIER = "dev.openfruit.swiftdata-model-native";
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SDKROOT = iphoneos;
+                SWIFT_VERSION = 6.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+            };
+            name = Release;
+        };
+        F00000000000000000000010 = { isa = PBXBuildFile; fileRef = F00000000000000000000007; };
+        F00000000000000000000011 = { isa = PBXBuildFile; fileRef = F0000000000000000000000E; };
+    };
+    rootObject = F00000000000000000000001;
+}

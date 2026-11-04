@@ -1,0 +1,15 @@
+{
+  "originHash" : "528267516288ab5756f9bc1985f2d5b7cb42f4517adf90710f44037300ea25dc",
+  "pins" : [
+    {
+      "identity" : "lnpopupcontroller",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/LeoNatan/LNPopupController.git",
+      "state" : {
+        "revision" : "e14712b8077f9d25c2b70d23241e922537673338",
+        "version" : "3.0.7"
+      }
+    }
+  ],
+  "version" : 3
+}

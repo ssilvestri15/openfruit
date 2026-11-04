@@ -1,0 +1,43 @@
+NIBArchive format=1 coder=10 objects=14 keys=11 values=28 classes=6
+[0] NSObject
+  UINibTopLevelObjectsKey = (ref) @1
+  UINibConnectionsKey = (ref) @8
+  UINibObjectsKey = (ref) @13
+[1] NSArray
+  NSInlinedValue = (true) true
+  UINibEncoderEmptyKey = (ref) @2
+  UINibEncoderEmptyKey = (ref) @4
+  UINibEncoderEmptyKey = (ref) @6
+[2] UIViewController
+  UINibName = (ref) @3
+[3] NSString
+  NS.bytes = (bytes) "dkK-ii-Bx4-view-8Uu-wz-ps8"
+[4] UIProxyObject
+  UIProxiedObjectIdentifier = (ref) @5
+[5] NSString
+  NS.bytes = (bytes) "IBFilesOwner"
+[6] UIProxyObject
+  UIProxiedObjectIdentifier = (ref) @7
+[7] NSString
+  NS.bytes = (bytes) "UIStoryboardPlaceholder"
+[8] NSArray
+  NSInlinedValue = (true) true
+  UINibEncoderEmptyKey = (ref) @9
+  UINibEncoderEmptyKey = (ref) @11
+[9] UIRuntimeOutletConnection
+  UILabel = (ref) @10
+  UISource = (ref) @4
+  UIDestination = (ref) @2
+[10] NSString
+  NS.bytes = (bytes) "sceneViewController"
+[11] UIRuntimeOutletConnection
+  UILabel = (ref) @12
+  UISource = (ref) @2
+  UIDestination = (ref) @6
+[12] NSString
+  NS.bytes = (bytes) "storyboard"
+[13] NSArray
+  NSInlinedValue = (true) true
+  UINibEncoderEmptyKey = (ref) @2
+  UINibEncoderEmptyKey = (ref) @4
+  UINibEncoderEmptyKey = (ref) @6

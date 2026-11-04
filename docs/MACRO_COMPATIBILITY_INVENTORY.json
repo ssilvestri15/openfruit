@@ -1,0 +1,1061 @@
+{
+  "schema_version": 2,
+  "description": "OPENFRUIT Swift Macro & Compiler-Plugin Ecosystem 4-Stage Compatibility Inventory",
+  "last_updated": "2026-10-18",
+  "completeness_claim": "partial-catalogue; proof scope reviewed independently; not global compatibility",
+  "evaluation_stages": {
+    "stage_1": "Plugin Compilation for Windows host (can it be built natively as a .exe or .dll?)",
+    "stage_2": "Plugin Loading (can swiftc load it via -load-plugin-executable, -plugin-path, or -in-process-plugin-server-path?)",
+    "stage_3": "Macro Expansion (freestanding and attached AST syntax expansion)",
+    "stage_4": "Cross-Target iOS Compatibility (does the expanded code compile against iPhoneOS.sdk with -target arm64-apple-ios?)"
+  },
+  "summary": {
+    "total_entries": 22,
+    "verified_entries": 1,
+    "blocked_entries": 6,
+    "investigated_entries": 4,
+    "catalogued_entries": 11,
+    "source_available_count": 13,
+    "closed_source_macho_count": 9,
+    "execution_modes": {
+      "windows-native": 13,
+      "darwin-compatibility-host": 9,
+      "unsupported": 0
+    }
+  },
+  "entries": [
+    {
+      "package": "Observation",
+      "version": "Current proof: SDK27.0 / WindowsSwift6.4-dev bd6612707e478cc / iOS17 target",
+      "module": "ObservationMacros",
+      "macros_provided": [
+        "@Observable",
+        "@ObservationIgnored",
+        "@ObservationTracked"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "600.0.0 (internal toolchain)",
+      "host_dependencies": [
+        "libSystem.B.dylib (Darwin) or ucrt.lib (Windows)",
+        "libswiftCore"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "passed",
+          "details": "Original prebuilt PE provider from selected Windows Swift6.4 toolchain; source rebuild not exercised."
+        },
+        "plugin_loading": {
+          "status": "passed",
+          "details": "Loaded automatically by swiftc via toolchain plugin-path."
+        },
+        "macro_expansion": {
+          "status": "passed",
+          "details": "Expands @Observable into _$observationRegistrar, access(keyPath:), withMutation(keyPath:), and Observable conformance extension."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "passed",
+          "details": "Verified exit code 0 compiling with -target arm64-apple-ios17.0 and iPhoneOS.sdk."
+        }
+      },
+      "status": "verified",
+      "proof": "%USERPROFILE%/.OPENFRUIT/diagnostics/architecture-completion/macro-expansion-focus-20261014/native-observable-independent-verification.json",
+      "notes": "Verified natively on Windows. Nextcloud uses @Observable in 10 model classes (NCStatusMessageModel, NCUserStatusModel, NCAssistantModel, etc.).",
+      "verification_scope": "Native OPENFRUIT current candidatec0fd19 owned @Observable app: unchanged source/PBX, compiler-emitted Observable conformance/registrar independently checked, SDK27/iOS17 ARM64 compile/link and unsigned IPA.23 observed native launches/zeroWSL; not full process-tree, device, other macros or reference-app proof."
+    },
+    {
+      "package": "swift-testing",
+      "version": "0.14.0 / Swift 6.0-6.3",
+      "module": "TestingMacros",
+      "macros_provided": [
+        "@Test",
+        "@Suite",
+        "#expect",
+        "#require"
+      ],
+      "swift_version": "6.0, 6.1",
+      "swiftsyntax_version": "600.0.0",
+      "host_dependencies": [
+        "ucrt.lib",
+        "msvcrt.lib",
+        "SwiftSyntax",
+        "SwiftCompilerPlugin"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "passed",
+          "details": "Prebuilt native PE x86_64 DLL (TestingMacros.dll, 682,496 bytes) exists in Windows Swift toolchain (usr/bin)."
+        },
+        "plugin_loading": {
+          "status": "passed",
+          "details": "Loaded automatically by swiftc via toolchain plugin-path."
+        },
+        "macro_expansion": {
+          "status": "passed",
+          "details": "Expands @Test into discovery runner, generator, accessor, and @section(\".sw5test$B\") records; expands #expect into __checkBinaryOperation."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "unverified",
+          "details": "Retained proof uses the Windows host target; an iOS-target integration proof is still required."
+        }
+      },
+      "status": "investigated",
+      "proof": "%USERPROFILE%/.OPENFRUIT/diagnostics/architecture-completion/macro-runtime-20261011/macro_audit/testing_expansion_proof.txt",
+      "notes": "Verified natively on Windows. Official modern testing framework for Swift 6.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "Foundation",
+      "version": "Current probe: SDK27.0 / WindowsSwift6.4-dev / iOS17 target",
+      "module": "FoundationMacros",
+      "macros_provided": [
+        "#Predicate",
+        "#Expression",
+        "#bundle"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "600.0.0",
+      "host_dependencies": [
+        "libSystem.B.dylib (Darwin) / ucrt.lib (Windows)",
+        "libswiftCore"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "passed",
+          "details": "Original prebuilt PE provider selected from WindowsSwift6.4; source rebuild unverified."
+        },
+        "plugin_loading": {
+          "status": "passed",
+          "details": "Loaded automatically by swiftc via toolchain plugin-path."
+        },
+        "macro_expansion": {
+          "status": "passed",
+          "details": "Expands #Predicate into PredicateExpressions syntax AST."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "failed",
+          "details": "Current native CLI owned #Predicate<Int> gate expands original Windows provider, then fails typecheck on FoundationEssentials and qualified builder imports against SDK27 Foundation. No source, SDK or expansion rewriting."
+        }
+      },
+      "status": "investigated",
+      "proof": "%USERPROFILE%/.OPENFRUIT/diagnostics/architecture-completion/macro-expansion-focus-20261014/native-predicate-command.json",
+      "notes": "Original source-built FOUNDATION_FRAMEWORK profile now passes direct compiler-boundary tests with matching snapshot SwiftSyntax; automatic native CLI provider acquisition/selection remains incomplete. Default production provider still fails the Predicate gate.",
+      "verification_scope": "Current candidatec0fd19 production-path diagnostic proves native Predicate expansion and iOS namespace failure only; no successful cross-target build or proof for Expression/bundle. Original inputs unchanged.",
+      "native_source_profile": {
+        "foundation_revision": "3b9d8f42b7923a7c1ae9ce20f3b05d1facac334e",
+        "swift_syntax_revision": "050f1a346fbbac0ca2cfb15a95274f7bd1cf0ccf",
+        "abi_prefix": "Compiler",
+        "original_build_flag": "FOUNDATION_FRAMEWORK",
+        "proof": "%USERPROFILE%\\.openfruit\\diagnostics\\architecture-completion\\macro-expansion-focus-20261014\\foundation-profile-independent-verification.json",
+        "verified_scope": "Original source build, actual native server loading, Predicate iOS17 typecheck/ARM64 object, Expression iOS18 and bundle iOS17 typecheck, original unsupported-function diagnostic; matching negative control",
+        "automatic_cli_integration": false,
+        "whole_plugin_compatibility_verified": false
+      }
+    },
+    {
+      "package": "DeveloperToolsSupport",
+      "version": "iOS 17.0+ / Xcode 16.0",
+      "module": "PreviewsMacros",
+      "macros_provided": [
+        "#Preview"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "600.0.0",
+      "host_dependencies": [
+        "Foundation.framework",
+        "libobjc.A.dylib",
+        "libSystem.B.dylib",
+        "libc++.1.dylib",
+        "libswiftCore.dylib",
+        "SwiftSyntax host dylibs"
+      ],
+      "source_available": false,
+      "execution_mode": "darwin-compatibility-host",
+      "residual_darwin_contracts": [
+        "objective-c.initialization",
+        "swift.initialization",
+        "pthread.registration",
+        "mach.task.ports",
+        "arm64e.execution",
+        "plugin.transport.original"
+      ],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "blocked",
+          "details": "Closed-source Apple macro. Shipped exclusively as fat Mach-O dylib in Xcode (PreviewsMacros.dll / libPreviewsMacros.dylib)."
+        },
+        "plugin_loading": {
+          "status": "blocked",
+          "details": "Native swiftc reports plugin for module PreviewsMacros not found. OpenFruit host preflight rejects Mach-O binary with Darwin runtime unavailable."
+        },
+        "macro_expansion": {
+          "status": "blocked",
+          "details": "Requires Darwin Compatibility Host (MVMR Unicorn ARM64) execution."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "blocked",
+          "details": "Blocked on host plugin execution."
+        }
+      },
+      "status": "blocked",
+      "proof": "%USERPROFILE%/.OPENFRUIT/diagnostics/architecture-completion/macro-runtime-20261011/macro_audit/preview_missing_plugin_proof.txt",
+      "notes": "Major blocker for Nextcloud (51 #Preview sites), Swiftfin, and IceCubesApp.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "SwiftUI",
+      "version": "Original SDK27.0 / Xcode27.0 build27A266a, archive identity and SwiftUICore interface independently paired",
+      "module": "SwiftUIMacros",
+      "macros_provided": [
+        "@Entry",
+        "@State (SDK27 accessor + peer)"
+      ],
+      "swift_version": "Original Xcode27.0 build27A266a host; compiler semantic version not independently inferred from SDK version",
+      "swiftsyntax_version": "Original Apple host closure extracted from the same Xcode archive; source revision not assumed from open-source snapshots",
+      "host_dependencies": [
+        "Foundation.framework",
+        "libobjc.A.dylib",
+        "libSystem.B.dylib",
+        "libswiftCore.dylib",
+        "SwiftSyntax host dylibs"
+      ],
+      "source_available": false,
+      "execution_mode": "darwin-compatibility-host",
+      "residual_darwin_contracts": [
+        "objective-c.initialization",
+        "swift.initialization",
+        "pthread.registration",
+        "mach.task.ports",
+        "arm64e.execution",
+        "plugin.transport.original"
+      ],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "blocked",
+          "details": "Matched original provider is thin ARM64 Mach-O; no verified native PE or original-source Windows provider."
+        },
+        "plugin_loading": {
+          "status": "passed",
+          "details": "Existing native host loads the original admitted plugin through a managed receipt automatically selected by actual native CLI. Native Windows plugin priority is preserved; original replies unchanged."
+        },
+        "macro_expansion": {
+          "status": "passed",
+          "details": "Current original SDK State<Int>=0 source compiles in real SwiftPM iOS package with original-provider child observed. Five role contexts listed below belong to the earlier direct consumer proof; current production wire counts are not measured. StateTypeMacro/@Entry remain unverified.",
+          "verified_cases": [
+            "StateMacro peer",
+            "StateMacro accessor",
+            "StatePropertyWrapperStorageMacro accessor",
+            "StateProjectedValueMacro accessor",
+            "StateInitialStoredValueMacro accessor"
+          ]
+        },
+        "cross_target_ios_compatibility": {
+          "status": "passed",
+          "details": "Installed CLI automatic SDK27/Swift6.4: real Windows build-tool generated source and original State source produce ARM64 objects, aggregate archive and linked unsigned owned IPA; exit0 in401.659s, unchanged owned/Apple inputs. No injected SDK/provider flags or upstream edits; no reference-app/device claim."
+        }
+      },
+      "status": "investigated",
+      "proof": "%USERPROFILE%/.OPENFRUIT/diagnostics/architecture-completion/20261017-managed-provider/host-local-ownership-verification.json",
+      "notes": "Current SwiftPM package consumer observes the real original-provider host child and successful compile; no current raw guest request count is asserted. Earlier direct app proof retains five distinct compiler expansion contexts. Native Windows plugin/tool compilation uses Windows SDKROOT/target without Darwin provider flags. Overall module remains investigated for unobserved macro roles/types.",
+      "verification_scope": "Production native CLI: original SDK27 State<Int>=0 inside a sibling local Swift package; Windows build-tool plugin/executable, generated Swift source and original State compile into ARM64 objects and linked unsigned owned IPA. All71 original namespace paths unchanged. Not all State contexts, StateTypeMacro/@Entry, reference applications, signing or device.",
+      "required_macro_types_from_sdk": [
+        "StateMacro",
+        "StatePropertyWrapperStorageMacro",
+        "StateInitialStoredValueMacro",
+        "StateProjectedValueMacro",
+        "StateTypeMacro"
+      ],
+      "original_provider": {
+        "archive_sha256": "6a270c53a5a0c5e0ac78125342d44c3cfff2716ec390373cd5e30834d80a67c3",
+        "plugin_sha256": "7b1b837efbe62f7e88fe0118cccec22c8764707eadde33e0d30e0371bed6ad64",
+        "server_sha256": "3657fe8060fc1d9ef55882daa63a2d2a7620460f9e0a49ce32fd119949b47a5c",
+        "architecture": "arm64",
+        "candidate_sha256": "40d910b15b3084bcc6612b773df7cec76033ecdf5d672f2a141f0e22d6b67722",
+        "macro_host_sha256": "6040c677610eef8e4723fea7755f508c301c070541d03fe8507c9067b4bfe07e",
+        "macro_expansion_verified": true,
+        "production_compiler_integration_verified": true,
+        "compiler_consumer_typecheck_verified": true,
+        "compiler_consumer_proof": "%USERPROFILE%/.OPENFRUIT/diagnostics/architecture-completion/20261017-managed-provider/host-local-ownership-verification.json",
+        "native_cli_exit_code": 0,
+        "all_state_roles_verified": false,
+        "macro_expansion_scope": "Original SDK27 State<Int>=0 in owned local SwiftPM package plus Windows-generated source, ARM64 objects and unsigned app. Earlier five-role direct-app trace retains its separate proof/candidate.",
+        "original_namespace_paths_unchanged": 71
+      },
+      "previous_proof": "%USERPROFILE%/.OPENFRUIT/diagnostics/architecture-completion/20261017-managed-provider/automatic-original-consumer-verification.json"
+    },
+    {
+      "package": "SwiftData",
+      "version": "iOS 17.0+ / Xcode 15.0+ / iOS 18.0",
+      "module": "SwiftDataMacros",
+      "macros_provided": [
+        "@Model",
+        "@ModelActor",
+        "@Attribute",
+        "@Relationship",
+        "@Transient",
+        "#Unique",
+        "#Index"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "600.0.0",
+      "host_dependencies": [
+        "libobjc.A.dylib",
+        "libSystem.B.dylib",
+        "libc++.1.dylib",
+        "libswiftCore.dylib",
+        "libswiftFoundation.dylib",
+        "SwiftSyntax host dylibs"
+      ],
+      "source_available": false,
+      "execution_mode": "darwin-compatibility-host",
+      "residual_darwin_contracts": [
+        "objective-c.initialization",
+        "swift.initialization",
+        "pthread.registration",
+        "mach.task.ports",
+        "arm64e.execution",
+        "plugin.transport.original"
+      ],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "blocked",
+          "details": "Closed-source Apple proprietary macro. Distributed only as fat Mach-O binary in Xcode."
+        },
+        "plugin_loading": {
+          "status": "blocked",
+          "details": "Native swiftc reports plugin for module SwiftDataMacros not found. OpenFruit host reports Mach-O inspected but Darwin runtime unavailable."
+        },
+        "macro_expansion": {
+          "status": "blocked",
+          "details": "Requires Darwin Compatibility Host (MVMR) execution."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "blocked",
+          "details": "Blocked on host plugin execution."
+        }
+      },
+      "status": "blocked",
+      "proof": "%USERPROFILE%/.OPENFRUIT/diagnostics/architecture-completion/macro-runtime-20261011/macro_audit/model_missing_plugin_proof.txt",
+      "notes": "Universal Mach-O. Required by modern CoreData/SwiftData iOS apps including IceCubesApp.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "swift-case-paths",
+      "version": "1.5.6",
+      "module": "CasePathsMacros",
+      "macros_provided": [
+        "@CasePathable",
+        "@dynamicMemberLookup"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "509.0.0 - 600.0.0",
+      "host_dependencies": [
+        "ucrt.lib",
+        "msvcrt.lib",
+        "SwiftSyntax",
+        "SwiftCompilerPlugin"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "plugin_loading": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "macro_expansion": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        }
+      },
+      "status": "catalogued",
+      "proof": null,
+      "notes": "Point-Free foundation for TCA, swift-navigation, swift-dependencies.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "swift-composable-architecture",
+      "version": "1.16.1",
+      "module": "ComposableArchitectureMacros",
+      "macros_provided": [
+        "@Reducer",
+        "@ObservableState",
+        "@Presents",
+        "@Shared",
+        "@SharedReader",
+        "@ViewAction"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "509.0.0 - 600.0.0",
+      "host_dependencies": [
+        "ucrt.lib",
+        "msvcrt.lib",
+        "SwiftSyntax",
+        "SwiftCompilerPlugin"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "plugin_loading": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "macro_expansion": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        }
+      },
+      "status": "catalogued",
+      "proof": null,
+      "notes": "Widely used in modern iOS apps including IceCubesApp.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "swift-dependencies",
+      "version": "1.4.1",
+      "module": "DependenciesMacros",
+      "macros_provided": [
+        "@DependencyClient",
+        "@DependencyEndpoint"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "509.0.0 - 600.0.0",
+      "host_dependencies": [
+        "ucrt.lib",
+        "msvcrt.lib",
+        "SwiftSyntax",
+        "SwiftCompilerPlugin"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "plugin_loading": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "macro_expansion": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        }
+      },
+      "status": "catalogued",
+      "proof": null,
+      "notes": "Used in Point-Free dependency ecosystem and IceCubesApp.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "swift-perception",
+      "version": "1.3.5",
+      "module": "PerceptionMacros",
+      "macros_provided": [
+        "@Perceptive"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "509.0.0 - 600.0.0",
+      "host_dependencies": [
+        "ucrt.lib",
+        "msvcrt.lib",
+        "SwiftSyntax",
+        "SwiftCompilerPlugin"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "plugin_loading": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "macro_expansion": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        }
+      },
+      "status": "catalogued",
+      "proof": null,
+      "notes": "Brings observation macros to earlier iOS deployments.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "MetaCodable",
+      "version": "1.4.1",
+      "module": "MetaCodableMacros",
+      "macros_provided": [
+        "@Codable",
+        "@CodedAt",
+        "@Default",
+        "@IgnoreCoding",
+        "@CodedBy"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "509.0.0 - 600.0.0",
+      "host_dependencies": [
+        "ucrt.lib",
+        "msvcrt.lib",
+        "SwiftSyntax",
+        "SwiftCompilerPlugin"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "plugin_loading": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "macro_expansion": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        }
+      },
+      "status": "catalogued",
+      "proof": null,
+      "notes": "Popular Codable boilerplate elimination macro in iOS apps.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "Spyable",
+      "version": "0.3.0",
+      "module": "SpyableMacro",
+      "macros_provided": [
+        "@Spyable"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "509.0.0 - 600.0.0",
+      "host_dependencies": [
+        "ucrt.lib",
+        "msvcrt.lib",
+        "SwiftSyntax",
+        "SwiftCompilerPlugin"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "plugin_loading": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "macro_expansion": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        }
+      },
+      "status": "catalogued",
+      "proof": null,
+      "notes": "Widely used in iOS unit test suites.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "Factory",
+      "version": "2.4.3",
+      "module": "FactoryMacros",
+      "macros_provided": [
+        "@Injected",
+        "@LazyInjected",
+        "@AutoRegister"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "509.0.0 - 600.0.0",
+      "host_dependencies": [
+        "ucrt.lib",
+        "msvcrt.lib",
+        "SwiftSyntax",
+        "SwiftCompilerPlugin"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "plugin_loading": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "macro_expansion": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        }
+      },
+      "status": "catalogued",
+      "proof": null,
+      "notes": "Popular iOS dependency injection framework.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "swift-power-assert",
+      "version": "0.14.3",
+      "module": "PowerAssertPlugin",
+      "macros_provided": [
+        "#assert"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "509.0.0 - 600.0.0",
+      "host_dependencies": [
+        "ucrt.lib",
+        "msvcrt.lib",
+        "SwiftSyntax",
+        "SwiftCompilerPlugin"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "plugin_loading": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "macro_expansion": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        }
+      },
+      "status": "catalogued",
+      "proof": null,
+      "notes": "Diagrammed assertions for XCTest / swift-testing.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "SwiftURL",
+      "version": "0.3.0",
+      "module": "URLMacro",
+      "macros_provided": [
+        "#URL"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "509.0.0 - 600.0.0",
+      "host_dependencies": [
+        "ucrt.lib",
+        "msvcrt.lib",
+        "SwiftSyntax",
+        "SwiftCompilerPlugin"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "plugin_loading": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "macro_expansion": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        }
+      },
+      "status": "catalogued",
+      "proof": null,
+      "notes": "Compile-time validated URL literal macro.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "AppIntents",
+      "version": "iOS 16.0+ / Xcode 16.0",
+      "module": "AppIntentsMacros",
+      "macros_provided": [
+        "@AssistantIntent",
+        "@AppEnum",
+        "@Parameter",
+        "@AppDependency"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "600.0.0",
+      "host_dependencies": [
+        "Foundation.framework",
+        "libobjc.A.dylib",
+        "libSystem.B.dylib",
+        "libswiftCore.dylib",
+        "libswiftUniformTypeIdentifiers.dylib",
+        "libswiftos.dylib",
+        "libAppIntentSchemas.dylib",
+        "SwiftSyntax host dylibs"
+      ],
+      "source_available": false,
+      "execution_mode": "darwin-compatibility-host",
+      "residual_darwin_contracts": [
+        "objective-c.initialization",
+        "swift.initialization",
+        "pthread.registration",
+        "mach.task.ports",
+        "arm64e.execution",
+        "plugin.transport.original"
+      ],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "blocked",
+          "details": "Closed-source Apple macro. Fat Mach-O binary in Xcode."
+        },
+        "plugin_loading": {
+          "status": "blocked",
+          "details": "Blocked on Darwin Compatibility Host."
+        },
+        "macro_expansion": {
+          "status": "blocked",
+          "details": "Blocked on host execution."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "blocked",
+          "details": "Blocked on host execution."
+        }
+      },
+      "status": "blocked",
+      "proof": null,
+      "notes": "Universal Mach-O. Expands Siri/Shortcuts app intent metadata.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "TipKit",
+      "version": "iOS 17.0+ / Xcode 16.0",
+      "module": "TipKitMacros",
+      "macros_provided": [
+        "@Tip",
+        "@Parameter"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "600.0.0",
+      "host_dependencies": [
+        "libobjc.A.dylib",
+        "libSystem.B.dylib",
+        "libc++.1.dylib",
+        "libswiftCore.dylib",
+        "SwiftSyntax host dylibs"
+      ],
+      "source_available": false,
+      "execution_mode": "darwin-compatibility-host",
+      "residual_darwin_contracts": [
+        "objective-c.initialization",
+        "swift.initialization",
+        "pthread.registration",
+        "mach.task.ports",
+        "arm64e.execution",
+        "plugin.transport.original"
+      ],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "blocked",
+          "details": "Closed-source Apple macro. Fat Mach-O binary in Xcode."
+        },
+        "plugin_loading": {
+          "status": "blocked",
+          "details": "Blocked on Darwin Compatibility Host."
+        },
+        "macro_expansion": {
+          "status": "blocked",
+          "details": "Blocked on host execution."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "blocked",
+          "details": "Blocked on host execution."
+        }
+      },
+      "status": "blocked",
+      "proof": null,
+      "notes": "Universal Mach-O. TipKit onboarding macros.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "FoundationModels",
+      "version": "iOS 18.0 / Xcode 16.0",
+      "module": "FoundationModelsMacros",
+      "macros_provided": [
+        "@Generable",
+        "@Guide"
+      ],
+      "swift_version": "6.0, 6.1",
+      "swiftsyntax_version": "600.0.0",
+      "host_dependencies": [
+        "libobjc.A.dylib",
+        "libSystem.B.dylib",
+        "libc++.1.dylib",
+        "libswiftCore.dylib",
+        "SwiftSyntax host dylibs"
+      ],
+      "source_available": false,
+      "execution_mode": "darwin-compatibility-host",
+      "residual_darwin_contracts": [
+        "objective-c.initialization",
+        "swift.initialization",
+        "pthread.registration",
+        "mach.task.ports",
+        "arm64e.execution",
+        "plugin.transport.original"
+      ],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "blocked",
+          "details": "Closed-source Apple macro. Fat Mach-O binary."
+        },
+        "plugin_loading": {
+          "status": "blocked",
+          "details": "Blocked on Darwin Compatibility Host."
+        },
+        "macro_expansion": {
+          "status": "blocked",
+          "details": "Blocked on host execution."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "blocked",
+          "details": "Blocked on host execution."
+        }
+      },
+      "status": "blocked",
+      "proof": null,
+      "notes": "Universal Mach-O. Generative AI structured output macros in iOS 18+.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "FinanceKit",
+      "version": "iOS 17.4+ / Xcode 16.0",
+      "module": "FinanceMacros",
+      "macros_provided": [
+        "@FinanceKitProperty"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "600.0.0",
+      "host_dependencies": [
+        "Foundation.framework",
+        "libobjc.A.dylib",
+        "libSystem.B.dylib",
+        "libc++.1.dylib",
+        "libswiftCore.dylib",
+        "SwiftSyntax host dylibs"
+      ],
+      "source_available": false,
+      "execution_mode": "darwin-compatibility-host",
+      "residual_darwin_contracts": [
+        "objective-c.initialization",
+        "swift.initialization",
+        "pthread.registration",
+        "mach.task.ports",
+        "arm64e.execution",
+        "plugin.transport.original"
+      ],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "blocked",
+          "details": "Closed-source Apple macro. Fat Mach-O binary in Xcode."
+        },
+        "plugin_loading": {
+          "status": "blocked",
+          "details": "Blocked on Darwin Compatibility Host."
+        },
+        "macro_expansion": {
+          "status": "blocked",
+          "details": "Blocked on host execution."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "blocked",
+          "details": "Blocked on host execution."
+        }
+      },
+      "status": "blocked",
+      "proof": null,
+      "notes": "Universal Mach-O. Apple financial data framework macros.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "MMIO",
+      "version": "0.1.0",
+      "module": "MMIOMacros",
+      "macros_provided": [
+        "@RegisterBank",
+        "@Register"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "509.0.0 - 600.0.0",
+      "host_dependencies": [
+        "ucrt.lib",
+        "msvcrt.lib",
+        "SwiftSyntax",
+        "SwiftCompilerPlugin"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "plugin_loading": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "macro_expansion": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        }
+      },
+      "status": "catalogued",
+      "proof": null,
+      "notes": "Hardware register access macros.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "swift-syntax",
+      "version": "600.0.1 / 603.0.0",
+      "module": "SwiftSyntaxMacros",
+      "macros_provided": [
+        "Macro infrastructure examples"
+      ],
+      "swift_version": "5.9, 6.0, 6.1",
+      "swiftsyntax_version": "600.0.1",
+      "host_dependencies": [
+        "ucrt.lib",
+        "msvcrt.lib"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "investigated",
+          "details": "Compiling swift-syntax manifest on Windows requires C11 stdnoreturn.h header path integration."
+        },
+        "plugin_loading": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "macro_expansion": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        }
+      },
+      "status": "investigated",
+      "proof": null,
+      "notes": "Foundational infrastructure of the entire Swift macro ecosystem.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    },
+    {
+      "package": "swift-foundation",
+      "version": "0.8.0",
+      "module": "FoundationMacros",
+      "macros_provided": [
+        "#Predicate",
+        "#Expression"
+      ],
+      "swift_version": "5.10, 6.0, 6.1",
+      "swiftsyntax_version": "600.0.0",
+      "host_dependencies": [
+        "ucrt.lib",
+        "msvcrt.lib",
+        "SwiftSyntax",
+        "SwiftCompilerPlugin"
+      ],
+      "source_available": true,
+      "execution_mode": "windows-native",
+      "residual_darwin_contracts": [],
+      "stages": {
+        "plugin_compilation_windows": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "plugin_loading": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "macro_expansion": {
+          "status": "unverified",
+          "details": "Availability or source inspection only; no retained expansion proof for this stage."
+        },
+        "cross_target_ios_compatibility": {
+          "status": "investigated",
+          "details": "Produces FoundationEssentials prefix which differs from Apple iPhoneOS.sdk Foundation."
+        }
+      },
+      "status": "catalogued",
+      "proof": null,
+      "notes": "Cross-platform Foundation implementation.",
+      "verification_scope": "Only commands, inputs and macro roles exercised in the linked proof; other macros and versions remain unverified."
+    }
+  ]
+}

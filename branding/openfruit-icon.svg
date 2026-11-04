@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sage-i221" x1="0.2" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#DCE6C2"/>
+      <stop offset="0.55" stop-color="#BCC79F"/>
+      <stop offset="1" stop-color="#97A27D"/>
+    </linearGradient>
+    <linearGradient id="under-i221" x1="1" y1="0" x2="0.2" y2="1">
+      <stop offset="0" stop-color="#5B6449"/>
+      <stop offset="1" stop-color="#A9B48F"/>
+    </linearGradient>
+    <radialGradient id="tile-i221" cx="0.3" cy="0.2" r="1">
+      <stop offset="0" stop-color="#262D25"/>
+      <stop offset="1" stop-color="#222821"/>
+    </radialGradient>
+    <!-- Crumpled-paper relief lit from the top left, then a fine film grain;
+         both stay inside the shape. -->
+    <filter id="paper-i221" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="turbulence" baseFrequency="0.035" numOctaves="4" seed="3" result="relief"/>
+      <feDiffuseLighting in="relief" surfaceScale="2.2" diffuseConstant="1" lighting-color="#ffffff" result="lit">
+        <feDistantLight azimuth="225" elevation="58"/>
+      </feDiffuseLighting>
+      <feComponentTransfer in="lit" result="soft">
+        <feFuncR type="linear" slope="0.22" intercept="0.82"/>
+        <feFuncG type="linear" slope="0.22" intercept="0.82"/>
+        <feFuncB type="linear" slope="0.22" intercept="0.82"/>
+      </feComponentTransfer>
+      <feBlend in="soft" in2="SourceGraphic" mode="multiply" result="paper"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" seed="7" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix in="noise" type="saturate" values="0" result="mono"/>
+      <feComponentTransfer in="mono" result="speckle">
+        <feFuncR type="linear" slope="2.4" intercept="-0.7"/>
+        <feFuncG type="linear" slope="2.4" intercept="-0.7"/>
+        <feFuncB type="linear" slope="2.4" intercept="-0.7"/>
+      </feComponentTransfer>
+      <feBlend in="speckle" in2="paper" mode="overlay" result="grained"/>
+      <feComposite in="grained" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="grain-soft-i221" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="3" seed="11" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0.9 0 0 0 -0.42" result="sparkle"/>
+      <feComposite in="sparkle" in2="SourceGraphic" operator="in" result="dots"/>
+      <feComponentTransfer in="dots" result="faint"><feFuncA type="linear" slope="0.12"/></feComponentTransfer>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="faint"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="205" fill="url(#tile-i221)" filter="url(#grain-soft-i221)"/><rect x="2" y="2" width="1020" height="1020" rx="203" fill="none" stroke="#2C3329" stroke-width="4"/>
+  <g filter="url(#paper-i221)"><path d="M239.6,249.7 Q246.0,168.0 328.0,168.0 L696.0,168.0 Q778.0,168.0 784.4,249.7 L829.8,828.2 Q834.0,882.0 780.0,882.0 L244.0,882.0 Q190.0,882.0 194.2,828.2 Z M295.0,328.0 Q295.0,270.0 353.0,270.0 L671.0,270.0 Q729.0,270.0 729.0,328.0 L729.0,542.0 Q729.0,600.0 671.0,600.0 L353.0,600.0 Q295.0,600.0 295.0,542.0 Z" fill-rule="evenodd" fill="url(#sage-i221)"/></g><rect x="580" y="718" width="184" height="26" rx="13" fill="#161C16"/>
+</svg>
