@@ -1330,10 +1330,6 @@ PackagingResult PackagerSigner::Package(
     }
     result.prepared_entitlement_requests = std::move(prepared_requests);
 
-    if (!fs::exists(zsign)) {
-        std::cerr << "OPENFRUIT Error: signing tool 'zsign' not found. Configure tools.zsign.\n";
-        return result;
-    }
     if (p12.empty() || !fs::exists(p12)) {
         std::cerr << "OPENFRUIT Error: signing certificate (.p12) path not specified or file does not exist.\n"
                   << "  Configure via: openfruit config set signing.p12 <path-to-.p12> (or pass --p12 <path>)\n";
@@ -1371,6 +1367,13 @@ PackagingResult PackagerSigner::Package(
             std::cerr << "OPENFRUIT signing preflight: " << identity_error << "\n";
             return result;
         }
+    }
+
+    // The signing tool is needed only from here on; credential and profile
+    // problems are reported first, whatever tools are installed.
+    if (!fs::exists(zsign)) {
+        std::cerr << "OPENFRUIT Error: signing tool 'zsign' not found. Configure tools.zsign.\n";
+        return result;
     }
 
     // zsign opens files by their full path, so a bundle member at 260 or

@@ -73,7 +73,11 @@ candidate (Swiftfin passed on it), then device install/launch.
   TEMP is the 8.3 name `C:\Users\RUNNER~1`); fixed in `4b57f81` (long paths
   in source view copies), `4206d69` (SDK cleanup deleted a registered
   quarantine spelled through an alias) and `4f8c6e3` (test fixtures and
-  skips). With a managed Swift installed, four tests still fail when TEMP is
+  skips). The second run failed only `provisioning_identity_tests`: the
+  runner has no zsign and signing checked for it before the certificate
+  preflight; the tool is now required only after credentials and profile are
+  validated (not reproducible here, where zsign is on the registry PATH).
+  With a managed Swift installed, four tests still fail when TEMP is
   a junction (`swiftpm_source_workspace`, `swift_host_environment`,
   `cache_read_operations`; junctions are refused by design, an 8.3 name is
   not a junction) or about 46 characters long (`swiftpm_manifest_integrity`,
